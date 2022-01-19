@@ -1,4 +1,83 @@
-p {
-    color: red;
+@font-face {
+    font-family: Impact, sans-serif;
+    src: url(fonts/impact.ttf);
+    font-weight: bold;
 }
-        
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+  }
+  
+  @-moz-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+  }
+  
+  @-webkit-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+  }
+  
+  @-o-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+  }
+  
+  @-ms-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+  }
+
+
+.logo {
+    width: 25%;
+    height: 25%;
+    margin-bottom: 5%;
+    
+    animation: fadeIn linear 5s;
+    -webkit-animation: fadeIn linear 5s;
+    -moz-animation: fadeIn linear 5s;
+    -o-animation: fadeIn linear 5s;
+    -ms-animation: fadeIn linear 5s;
+}
+
+.download-link {
+  margin: 4% 0;
+  font-size: 18px;
+  font-family: Impact;
+  font-weight: bold;
+}
+
+.socials{
+    display: flex;
+    justify-content: center;
+    grid-gap: 20px;
+}
+
+.socials-logo{
+    width: 50px;
+    height: 50px;
+}
+  
+h1 {
+    font-family: Impact;
+    font-weight: bold;
+}
+
+p {
+    font-family: Impact;
+    font-size: 21px;
+}
+
+body {
+    text-align: center;
+    height: 100%;
+    margin: 0;
+
+    animation: fadeIn linear 3s;
+    -webkit-animation: fadeIn linear 3s;
+    -moz-animation: fadeIn linear 3s;
+    -o-animation: fadeIn linear 3s;
+    -ms-animation: fadeIn linear 3s;
+}
