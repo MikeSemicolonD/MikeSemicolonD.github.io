@@ -1,3 +1,3 @@
-# <a href="MikeSemicolonD.github.io">MikeSemicolonD.github.io</a>
+# [MikeSemicolonD.github.io](https://MikeSemicolonD.github.io)
 
 Just a simple github page I made
