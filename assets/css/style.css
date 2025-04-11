@@ -1,45 +1,127 @@
 @font-face {
     font-family: Impact, sans-serif;
-    src: url(fonts/impact.ttf);
+    src: url(fonts/Impact/impact.ttf);
     font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Light'), local('OpenSans-Light'), url(https://fonts.gstatic.com/s/opensans/v13/DXI1ORHCpsQm3Vp6mXoaTXhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url(https://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url(https://fonts.gstatic.com/s/opensans/v13/MTP_ySUJH_bn48VBG8sNSnhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .menu-icon {
+    display: block !important;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    margin-top: 10px;
+    background-color: #444;
+    padding: 10px;
+    border-radius: 5px;
+  }
 }
 
 @keyframes fadeIn {
     0% {opacity:0;}
     100% {opacity:1;}
-  }
-  
-  @-moz-keyframes fadeIn {
-    0% {opacity:0;}
-    100% {opacity:1;}
-  }
-  
-  @-webkit-keyframes fadeIn {
-    0% {opacity:0;}
-    100% {opacity:1;}
-  }
-  
-  @-o-keyframes fadeIn {
-    0% {opacity:0;}
-    100% {opacity:1;}
-  }
-  
-  @-ms-keyframes fadeIn {
-    0% {opacity:0;}
-    100% {opacity:1;}
-  }
+}
 
+@-moz-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+.navbar {
+  background-color: #333;
+  padding: 0.5% 20%;
+  color: rgb(197, 197, 197);
+  position: relative;
+  box-shadow: 0px -10px 10px 20px rgba(0, 0, 0, .6);
+  font-family: "Open Sans";
+  font-weight: 300;
+}
+
+.menu-toggle {
+  display: none;
+}
+
+.menu-icon {
+  font-size: 24px;
+  cursor: pointer;
+  display: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-links>li {
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgb(160, 160, 160);
+  text-decoration: none;
+}
+
+content {
+  padding: 2% 0%;
+}
 
 .logo {
-    width: 25%;
-    height: 25%;
-    margin-bottom: 5%;
-    
-    animation: fadeIn linear 5s;
-    -webkit-animation: fadeIn linear 5s;
-    -moz-animation: fadeIn linear 5s;
-    -o-animation: fadeIn linear 5s;
-    -ms-animation: fadeIn linear 5s;
+  width: 25%;
+  height: 25%;
+  margin-bottom: 5%;
+  
+  animation: fadeIn linear 5s;
+  -webkit-animation: fadeIn linear 5s;
+  -moz-animation: fadeIn linear 5s;
+  -o-animation: fadeIn linear 5s;
+  -ms-animation: fadeIn linear 5s;
+}
+
+.profile {
+  border-radius: 50%;
+  border: 5px solid #fff;
+  -webkit-box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
+  box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
+  width: 15%;
 }
 
 .download-link {
@@ -50,34 +132,59 @@
 }
 
 .socials{
-    display: flex;
-    justify-content: center;
-    grid-gap: 20px;
+  display: flex;
+  justify-content: center;
+  grid-gap: 20px;
 }
 
 .socials-logo{
-    width: 50px;
-    height: 50px;
+  width: 50px;
+  height: 50px;
 }
   
 h1 {
-    font-family: Impact;
-    font-weight: bold;
+  color:azure;
+  font-family: "Open Sans";
+  font-weight: 600;
 }
 
 p {
-    font-family: Impact;
-    font-size: 21px;
+  color:azure;
+  font-family: "Open Sans";
+  font-size: 21px;
+  font-weight: 400;
 }
 
 body {
-    text-align: center;
-    height: 100%;
-    margin: 0;
+  text-align: center;
+  height: 100%;
+  margin: 0;
+  
+  background-repeat: repeat-y;
+  background-size: cover;
+  opacity: 1;
 
-    animation: fadeIn linear 3s;
-    -webkit-animation: fadeIn linear 3s;
-    -moz-animation: fadeIn linear 3s;
-    -o-animation: fadeIn linear 3s;
-    -ms-animation: fadeIn linear 3s;
+  animation: fadeIn linear 3s;
+  -webkit-animation: fadeIn linear 3s;
+  -moz-animation: fadeIn linear 3s;
+  -o-animation: fadeIn linear 3s;
+  -ms-animation: fadeIn linear 3s;
+}
+
+.nav-footer{
+  height: 8%;
+  bottom: 0px;
+  box-shadow: rgba(0, 0, 0, 0.6) 0px -20px 10px;
+  position: fixed;
+  background-color: #2e2e2e;
+  width: 100%;
+  color: gray;
+}
+
+.copyright {
+  margin: 0;
+  padding: 1.5% 20%;
+  float: left;
+  font-family: "Open Sans";
+  font-weight: 400;
 }
