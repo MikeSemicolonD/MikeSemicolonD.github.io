@@ -188,3 +188,38 @@ body {
   font-family: "Open Sans";
   font-weight: 400;
 }
+
+.dropdown {
+  overflow: hidden;
+}
+
+.dropdown .drop-button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background-color: inherit;
+  font-family: inherit;
+  color: rgb(160, 160, 160);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.dropdown-content {
+  align-items: center;
+  justify-content: center;
+  border: #2e2e2e 2px;
+  border-radius: 3px;
+  background-color: #222222;
+  display: none;
+  position: absolute;
+  min-width: 170px;
+  min-height: 45px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.show {
+  display: flex;
+}

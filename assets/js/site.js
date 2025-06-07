@@ -31,3 +31,17 @@ window.addEventListener('resize', function() {
         nav.style = null;
     }
 });
+
+function openNavDropdown() {
+  document.getElementById("itchDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(e) {
+  if (!e.target.matches('.drop-button')) {
+  var myDropdown = document.getElementById("itchDropdown");
+    if (myDropdown.classList.contains('show')) {
+      myDropdown.classList.remove('show');
+    }
+  }
+}
