@@ -1,14 +1,17 @@
-// Setting the background relative to the time of day for the user
-var datestr = new Date(new Date().getHours() * 3600 * 1000).toUTCString().replace(/ GMT$/, "");
-var hour = datestr.substring(datestr.lastIndexOf(' ') + 1);
-hour = hour.substring(0, hour.indexOf(':'));
+// Hi, hope you don't mind the arcane JS.
 
-if (hour > 5 && hour < 18) {
-    document.getElementById("background").style.backgroundImage = "url(assets/images/lighthouse.jpeg)";
-}
-else {
-    document.getElementById("background").style.backgroundImage = "url(assets/images/lake.jpeg)";
-}
+// Setting the background relative to the time of day for the user (day or night)
+const hour = new Date().getHours();
+
+document.getElementById("background").style.backgroundImage = (hour > 5 && hour < 18) ? "url(assets/images/lighthouse.jpeg)" : "url(assets/images/lake.jpeg)";
+
+
+
+
+
+// Corresponds with @media (max-width: 768px) in style.css
+const STYLE_MAX_WIDTH = 768; 
+
 
 
 
@@ -16,32 +19,93 @@ else {
 // Listening for nav menu toggling when on mobile
 const checkbox = document.querySelector("#menu-toggle");
 const nav = document.querySelector(".nav-links");
-checkbox.addEventListener("change", () => {
-  if (checkbox.checked) {
-    nav.setAttribute("style", "display: flex !important");
-  } else {
-    nav.style.display = "none";
-  }
-});
+
+checkbox.addEventListener("change", () => ToggleMobileNavBar());
+
+
+
 
 // Resetting style changes when zooming out past a limit
-window.addEventListener('resize', function() {
-    if(window.innerWidth > 768)
+window.addEventListener('resize', () => 
+{
+    if(window.innerWidth > STYLE_MAX_WIDTH)
     {
-        nav.style = null;
+      // Display the navbar if there's enough width regardless of dropdown
+      if(checkbox.checked)
+      {
+        nav.setAttribute("style", "display: flex !important");
+      }
+    }
+    else
+    {
+      // If there isn't enough space update to reflect checkbox status
+      ToggleMobileNavBar(checkbox.checked);
     }
 });
 
-function openNavDropdown() {
-  document.getElementById("itchDropdown").classList.toggle("show");
-}
+
+
+
+const itchDropdown = document.getElementById("itchDropdown");
 
 // Close the dropdown if the user clicks outside of it
-window.onclick = function(e) {
-  if (!e.target.matches('.drop-button')) {
-  var myDropdown = document.getElementById("itchDropdown");
-    if (myDropdown.classList.contains('show')) {
-      myDropdown.classList.remove('show');
+window.onclick = (e) => 
+{
+  if (!e.target.matches('.drop-button')) 
+  {
+    if (itchDropdown.classList.contains('show')) 
+    {
+      itchDropdown.classList.remove('show');
     }
   }
+}
+
+// Triggered from the logo
+async function triggerSpin (element)
+{
+  element.classList.add("spin")
+  await new Promise(() => setTimeout(() => {element.classList.remove("spin");}, 1000));
+}
+
+// Triggered from a button
+function openNavDropdown() 
+{
+  itchDropdown.classList.toggle("show");
+}
+
+function ToggleMobileNavBar(forceDisplay = null)
+{
+  if(forceDisplay !== null)
+  {
+    if (!forceDisplay) 
+    {
+      nav.setAttribute("style", "display: flex !important");
+      //checkbox.checked = true;
+    } 
+    else 
+    {
+      nav.setAttribute("style", "display: none !important");
+      //checkbox.checked = false;
+    }
+  }
+  else
+  {
+    if (!checkbox.checked) 
+    {
+      nav.setAttribute("style", "display: flex !important");
+    } 
+    else 
+    {
+      nav.setAttribute("style", "display: none !important");
+    }
+  }
+}
+
+
+
+// Start hamburger menu as closed if we're on mobile
+if(window.innerWidth <= STYLE_MAX_WIDTH)
+{
+  checkbox.checked = true;
+  ToggleMobileNavBar()
 }

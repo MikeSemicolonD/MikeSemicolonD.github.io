@@ -105,23 +105,42 @@ content {
 }
 
 .logo {
-  width: 25%;
-  height: 25%;
   margin-bottom: 5%;
+
+  transition: all 1s;
   
-  animation: fadeIn linear 5s;
-  -webkit-animation: fadeIn linear 5s;
-  -moz-animation: fadeIn linear 5s;
-  -o-animation: fadeIn linear 5s;
-  -ms-animation: fadeIn linear 5s;
+  animation: fadeIn linear 1s;
+  -webkit-animation: fadeIn linear 1s;
+  -moz-animation: fadeIn linear 1s;
+  -o-animation: fadeIn linear 1s;
+  -ms-animation: fadeIn linear 1s;
+}
+
+.logo.spin {
+  transform: rotate(360deg);
+}
+
+.content-text {
+  opacity: 1;
+
+  animation: fadeIn linear 2;
+  -webkit-animation: fadeIn linear 2s;
+  -moz-animation: fadeIn linear 2s;
+  -o-animation: fadeIn linear 2s;
+  -ms-animation: fadeIn linear 2s;
 }
 
 .profile {
   border-radius: 50%;
-  border: 5px solid #fff;
+  width: 15%;
+}
+
+.logo-shadow-container {
+  position: absolute;
+  z-index: -1;
+
   -webkit-box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
   box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
-  width: 15%;
 }
 
 .download-link {
@@ -163,12 +182,6 @@ body {
   background-repeat: repeat-y;
   background-size: cover;
   opacity: 1;
-
-  animation: fadeIn linear 3s;
-  -webkit-animation: fadeIn linear 3s;
-  -moz-animation: fadeIn linear 3s;
-  -o-animation: fadeIn linear 3s;
-  -ms-animation: fadeIn linear 3s;
 }
 
 .nav-footer{
@@ -189,14 +202,9 @@ body {
   font-weight: 400;
 }
 
-.dropdown {
-  overflow: hidden;
-}
-
 .dropdown .drop-button {
   cursor: pointer;
   border: none;
-  outline: none;
   background-color: inherit;
   font-family: inherit;
   color: rgb(160, 160, 160);
@@ -204,6 +212,10 @@ body {
   padding: 0;
   font-size: 16px;
   font-weight: 300;
+}
+
+.drop-button :focus-visible {
+    outline: -webkit-focus-ring-color auto 1px;
 }
 
 .dropdown-content {
