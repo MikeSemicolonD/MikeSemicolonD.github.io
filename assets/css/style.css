@@ -116,10 +116,6 @@ content {
   -ms-animation: fadeIn linear 1s;
 }
 
-.logo.spin {
-  transform: rotate(360deg);
-}
-
 .content-text {
   opacity: 1;
 
@@ -188,9 +184,10 @@ body {
   height: 8%;
   bottom: 0px;
   box-shadow: rgba(0, 0, 0, 0.6) 0px -20px 10px;
+  left: -10px;
   position: fixed;
   background-color: #2e2e2e;
-  width: 100%;
+  width: 101%;
   color: gray;
 }
 
