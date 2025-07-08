@@ -60,11 +60,26 @@ window.onclick = (e) =>
   }
 }
 
+var timeoutId = undefined;
+const rotAmount = 360;
+
+var totalRot = 0;
+
 // Triggered from the logo
 async function triggerSpin (element)
 {
-  element.classList.add("spin")
-  await new Promise(() => setTimeout(() => {element.classList.remove("spin");}, 1000));
+  totalRot += rotAmount;
+
+  element.style.transform = "rotate("+totalRot+"deg)";
+
+  clearTimeout(timeoutId);
+
+  timeoutId = setTimeout(() => {
+    totalRot = 0;
+    element.style.transform = "rotate("+totalRot+"deg)";
+  }, 5000)
+
+  await new Promise(() => timeoutId);
 }
 
 // Triggered from a button
