@@ -77,6 +77,9 @@
 
 content {
   padding: 2% 0%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .navbar {
@@ -109,9 +112,74 @@ content {
   list-style: none;
 }
 
+.nav-links a:hover {
+  font-weight: bold;
+  color: white;
+  text-shadow: rgb(255, 255, 255) 1px 0 10px;
+}
+
 .nav-links a {
   color: rgb(160, 160, 160);
   text-decoration: none;
+}
+
+.copyright a:link {
+  text-decoration: none;
+}
+
+.copyright a:active {
+  color: rgb(160, 160, 160);
+}
+
+.copyright a:visited {
+ color: rgb(130, 130, 130);
+}
+
+
+.dropdown .drop-button {
+  cursor: pointer;
+  border: none;
+  background-color: inherit;
+  font-family: inherit;
+  color: rgb(160, 160, 160);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.drop-button:hover {
+  font-weight: bold;
+  color: white;
+  text-shadow: rgb(255, 255, 255) 1px 0 10px;
+}
+
+.drop-button :focus-visible {
+  outline: -webkit-focus-ring-color auto 1px;
+}
+
+.dropdown-content {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: #2e2e2e 2px;
+  border-radius: 3px;
+  background-color: #222222;
+  display: none;
+  position: absolute;
+  min-width: 170px;
+  min-height: 45px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  width: 10%;
+}
+
+.dropdown-content a {
+  padding: 5px;
+}
+
+.show {
+  display: flex;
 }
 
 .logo {
@@ -124,6 +192,55 @@ content {
   -moz-animation: fadeIn linear 1s;
   -o-animation: fadeIn linear 1s;
   -ms-animation: fadeIn linear 1s;
+
+  cursor: pointer;
+}
+
+.word-animation
+{
+  transition: all 0.1s;
+  padding: 0 2px;
+}
+
+.word-animation-two {
+  transition: all 0.5s;
+  padding: 0 2px;
+}
+
+.word-animation-three {
+  transition: all 0.2s;
+  padding: 0 2px;
+}
+
+.word-animation-four {
+  transition: all 0.3s;
+  padding: 0 2px;
+}
+
+.word-animation-five {
+  transition: all 0.5s;
+  padding: 0 2px;
+}
+
+.word-animation:hover
+{
+  transform: translateY(-15px);
+}
+
+.word-animation-two:hover {
+  transform: translateY(-10px) rotate(15deg);
+}
+
+.word-animation-three:hover {
+  transform: translateY(-12px) rotate(10deg);
+}
+
+.word-animation-four:hover {
+  transform: translateY(-12px) rotate(-12deg);;
+}
+
+.word-animation-five:hover {
+  transform: translateY(-10px) rotate(360deg);
 }
 
 .content-text {
@@ -141,6 +258,16 @@ content {
   bottom: 7%;
 }
 
+.content-text h1 {
+  cursor: default;
+}
+
+.content-text p {
+  cursor: default;
+  grid-auto-flow: column;
+  display: grid;
+}
+
 .profile {
   border-radius: 50%;
   width: 15%;
@@ -149,11 +276,14 @@ content {
 }
 
 .logo-shadow-container {
-  position: absolute;
-  z-index: -1;
-
-  -webkit-box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
-  box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
+    border-radius: 150px;
+    width: 13%;
+    height: 10%;
+    max-width: 20%;
+    min-height: 250px;
+    min-width: 250px;
+    -webkit-box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
+    box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
 }
 
 .download-link {
@@ -215,43 +345,4 @@ body {
   font-family: "Open Sans";
   font-weight: 400;
   text-wrap-style: pretty;
-}
-
-.dropdown .drop-button {
-  cursor: pointer;
-  border: none;
-  background-color: inherit;
-  font-family: inherit;
-  color: rgb(160, 160, 160);
-  margin: 0;
-  padding: 0;
-  font-size: 16px;
-  font-weight: 300;
-}
-
-.drop-button :focus-visible {
-    outline: -webkit-focus-ring-color auto 1px;
-}
-
-.dropdown-content {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: #2e2e2e 2px;
-  border-radius: 3px;
-  background-color: #222222;
-  display: none;
-  position: absolute;
-  min-width: 170px;
-  min-height: 45px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  padding: 5px;
-}
-
-.show {
-  display: flex;
 }

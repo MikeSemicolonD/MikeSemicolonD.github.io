@@ -77,7 +77,7 @@ async function triggerSpin (element)
   timeoutId = setTimeout(() => {
     totalRot = 0;
     element.style.transform = "rotate("+totalRot+"deg)";
-  }, 5000)
+  }, 3500)
 
   await new Promise(() => timeoutId);
 }
