@@ -125,6 +125,7 @@ content {
 
 .copyright a:link {
   text-decoration: none;
+  color: gray;
 }
 
 .copyright a:active {
