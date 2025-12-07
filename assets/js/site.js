@@ -1,18 +1,6 @@
-// Hi, hope you don't mind the arcane JS.
-
-// Setting the background relative to the time of day for the user (day or night)
-const hour = new Date().getHours();
-
-document.getElementById("background").style.backgroundImage = (hour > 5 && hour < 18) ? "url(assets/images/lighthouse.jpeg)" : "url(assets/images/lake.jpeg)";
-
-
-
-
 
 // Corresponds with @media (max-width: 768px) in style.css
 const STYLE_MAX_WIDTH = 768; 
-
-
 
 
 
@@ -20,7 +8,8 @@ const STYLE_MAX_WIDTH = 768;
 const checkbox = document.querySelector("#menu-toggle");
 const nav = document.querySelector(".nav-links");
 
-checkbox.addEventListener("change", () => ToggleMobileNavBar());
+if(checkbox)
+  checkbox.addEventListener("change", () => ToggleMobileNavBar());
 
 
 
@@ -51,35 +40,13 @@ const itchDropdown = document.getElementById("itchDropdown");
 // Close the dropdown if the user clicks outside of it
 window.onclick = (e) => 
 {
-  if (!e.target.matches('.drop-button')) 
+  if (!e.target.matches('.drop-button') && itchDropdown) 
   {
     if (itchDropdown.classList.contains('show')) 
     {
       itchDropdown.classList.remove('show');
     }
   }
-}
-
-var timeoutId = undefined;
-const rotAmount = 360;
-
-var totalRot = 0;
-
-// Triggered from the logo
-async function triggerSpin (element)
-{
-  totalRot += rotAmount;
-
-  element.style.transform = "rotate("+totalRot+"deg)";
-
-  clearTimeout(timeoutId);
-
-  timeoutId = setTimeout(() => {
-    totalRot = 0;
-    element.style.transform = "rotate("+totalRot+"deg)";
-  }, 3500)
-
-  await new Promise(() => timeoutId);
 }
 
 // Triggered from a button
@@ -124,3 +91,4 @@ if(window.innerWidth <= STYLE_MAX_WIDTH)
   checkbox.checked = true;
   ToggleMobileNavBar()
 }
+
