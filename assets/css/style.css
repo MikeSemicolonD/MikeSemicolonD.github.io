@@ -103,6 +103,20 @@ content {
   display: none;
 }
 
+.rss-button {
+  position: relative;
+  height: fit-content;
+  width: fit-content;
+  top: 5%;
+  display: block;
+  float: right;
+	
+  img {
+  	width: 18px;
+  	height: 18px;
+  }
+}
+
 .nav-links {
   display: flex;
   gap: 15px;
