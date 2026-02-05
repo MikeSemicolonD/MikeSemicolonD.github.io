@@ -213,49 +213,79 @@ content {
 
 .word-animation
 {
-  transition: all 0.1s;
+  img {
+    transition: transform 0.1s;
+  }
   padding: 0 2px;
 }
 
 .word-animation-two {
-  transition: all 0.5s;
+  img {
+    transition: transform 0.5s;
+  }
   padding: 0 2px;
+  position: relative;
+  left: 18px;
 }
 
 .word-animation-three {
-  transition: all 0.2s;
+  img {
+    transition: transform 0.2s;
+  }
   padding: 0 2px;
+  position: relative;
+  top: 3px;
+  left: 6px;
 }
 
 .word-animation-four {
-  transition: all 0.3s;
+  img {
+    transition: transform 0.3s;
+  }
   padding: 0 2px;
+  position: relative;
+  top: 9px;
+  left: -1px;
 }
 
 .word-animation-five {
-  transition: all 0.5s;
+  img {
+    transition: transform 0.5s;
+  }
   padding: 0 2px;
+  position: relative;
+  left: -10px;
 }
 
 .word-animation:hover
 {
-  transform: translateY(-15px);
+  img {
+    transform: translateY(-15px);
+  }
 }
 
 .word-animation-two:hover {
-  transform: translateY(-10px) rotate(15deg);
+  img {
+    transform: translateY(-10px) rotate(15deg);
+  }
 }
 
 .word-animation-three:hover {
-  transform: translateY(-12px) rotate(10deg);
+  img {
+    transform: translateY(-12px) rotate(10deg);
+  }
 }
 
 .word-animation-four:hover {
-  transform: translateY(-12px) rotate(-12deg);;
+  img {
+    transform: translateY(-12px) rotate(-12deg);
+  }
 }
 
 .word-animation-five:hover {
-  transform: translateY(-10px) rotate(360deg);
+  img {
+    transform: translateY(-10px) rotate(360deg);
+  }
 }
 
 .content-text {
@@ -271,6 +301,21 @@ content {
 
   position: relative;
   bottom: 7%;
+
+  img 
+  {
+    filter: drop-shadow(0px 0px 15px rgb(0 0 0));
+  }
+
+  p
+  {
+    scale: 0.6;
+  }
+
+  h1
+  {
+    scale: 0.9;
+  }
 }
 
 .content-text h1 {

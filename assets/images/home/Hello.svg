@@ -1,0 +1,31 @@
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="31.148151mm"
+   height="8.2010498mm"
+   viewBox="0 0 28.148151 8.2010498"
+   version="1.1"
+   id="svg8">
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-48.658529,-38.73891)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="47.625"
+       y="46.779762"
+       id="text3715"><tspan
+         sodipodi:role="line"
+         id="tspan3713"
+         x="47.625"
+         y="46.779762"
+         style="stroke-width:0.26458332">Hello!</tspan></text>
+  </g>
+</svg>
