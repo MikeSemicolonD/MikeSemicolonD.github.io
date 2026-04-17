@@ -37,7 +37,7 @@ var lastDropdown = null;
 // Close the dropdown if the user clicks outside of it
 window.onclick = (e) => 
 {
-  if (!e.target.matches('.drop-button')) 
+  if (!e.target.classList.matches('.drop-button')) 
   {
     toggleNavDropdown(e);
   }
@@ -53,6 +53,9 @@ function toggleNavDropdown(e) {
   if (el) {
     el.classList.toggle("show");
     lastDropdown = e;
+  }
+  else {
+    lastDropdown = null;
   }
 }
 
