@@ -37,25 +37,32 @@ var lastDropdown = null;
 // Close the dropdown if the user clicks outside of it
 window.onclick = (e) => 
 {
-  if (!e.target.classList.matches('.drop-button')) 
+  if (e.target.classList.matches('.drop-button')) 
   {
     toggleNavDropdown(e);
   }
 }
 
 // Triggered from a button
-function toggleNavDropdown(e) {
+function toggleNavDropdown(e, val = null) {
   if (lastDropdown != e && lastDropdown != null) {
-    toggleNavDropdown(lastDropdown);
+    toggleNavDropdown(lastDropdown, false);
+    lastDropdown = null;
   }
 
   var el = e.parentElement.querySelector('#dropdown')
   if (el) {
-    el.classList.toggle("show");
+    if(val === null)
+      el.classList.toggle("show");
+    else {
+      if (val === true)
+      {
+        el.classList.add("show");
+      } else {
+        el.classList.remove("show");
+      }
+    }
     lastDropdown = e;
-  }
-  else {
-    lastDropdown = null;
   }
 }
 

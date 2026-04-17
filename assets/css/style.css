@@ -193,8 +193,20 @@ content {
   padding: 5px;
 }
 
+@keyframes dropdownOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .show {
   display: flex;
+  animation: dropdownOpen 0.18s ease-out forwards;
 }
 
 .logo {
