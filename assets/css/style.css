@@ -212,7 +212,7 @@ content {
 .logo {
   margin-bottom: 5%;
 
-  transition: all 1s;
+  transition: all 1s linear;
   
   animation: fadeIn linear 1s;
   -webkit-animation: fadeIn linear 1s;
