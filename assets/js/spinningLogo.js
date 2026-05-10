@@ -117,13 +117,13 @@ function checkHitBox()
 		return;
   }
   
-  if (((x+imgWidth+borderPadding) > screenWidth && xDir > 0) || ((x-imgWidth) < -screenWidth && xDir < 0)) {
+  if (((x+imgWidth+(borderPadding*1.1)) > screenWidth && xDir > 0) || ((x-imgWidth) < -screenWidth && xDir < 0)) {
       xDir *= -1;
       hitBounds();
       return;
   }
         
-  if (((y+imgHeight) > screenHeight && yDir > 0) || ((y-imgHeight-borderPadding) < -screenHeight && yDir < 0)) {
+  if (((y+imgHeight+borderPadding) > screenHeight && yDir > 0) || ((y-imgHeight) < -(screenHeight-(borderPadding*2)) && yDir < 0)) {
       yDir *= -1;
       hitBounds();
       return;
@@ -132,6 +132,7 @@ function checkHitBox()
 
 function hitBounds()
 {
+
 	hit++;
 
   // Spin ~180° on every bounce, with a little randomness so it doesn't feel mechanical

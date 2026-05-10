@@ -1,4 +1,3 @@
-
 // Corresponds with @media (max-width: 768px) in style.css
 const STYLE_MAX_WIDTH = 768; 
 
@@ -22,7 +21,7 @@ window.addEventListener('resize', () =>
       // Display the navbar if there's enough width regardless of dropdown
       if(checkbox.checked)
       {
-        nav.setAttribute("style", "display: flex !important");
+        ToggleMobileNavBar(false);
       }
     }
     else
@@ -32,37 +31,45 @@ window.addEventListener('resize', () =>
     }
 });
 
-var lastDropdown = null;
+let lastDropdown = null;
 
 // Close the dropdown if the user clicks outside of it
 window.onclick = (e) => 
 {
-  if (e.target.classList.matches('.drop-button')) 
+  if (!e.target.classList.contains("drop-button"))
   {
-    toggleNavDropdown(e);
+    resetLastDropdown();
   }
 }
 
 // Triggered from a button
 function toggleNavDropdown(e, val = null) {
   if (lastDropdown != e && lastDropdown != null) {
-    toggleNavDropdown(lastDropdown, false);
-    lastDropdown = null;
+    resetLastDropdown();
   }
 
-  var el = e.parentElement.querySelector('#dropdown')
-  if (el) {
-    if(val === null)
-      el.classList.toggle("show");
-    else {
-      if (val === true)
-      {
-        el.classList.add("show");
-      } else {
-        el.classList.remove("show");
+  if (e.parentElement !== undefined) {
+    var el = e.parentElement.querySelector('#dropdown')
+    if (el) {
+      if (val === null)
+        el.classList.toggle("show");
+      else {
+        if (val === true) {
+          el.classList.add("show");
+        } else {
+          el.classList.remove("show");
+        }
       }
+      lastDropdown = e;
     }
-    lastDropdown = e;
+  }
+}
+
+function resetLastDropdown()
+{
+  if (lastDropdown !== null) {
+    toggleNavDropdown(lastDropdown, false);
+    lastDropdown = null;
   }
 }
 
@@ -73,12 +80,12 @@ function ToggleMobileNavBar(forceDisplay = null)
     if (!forceDisplay) 
     {
       nav.setAttribute("style", "display: flex !important");
-      //checkbox.checked = true;
+	  checkbox.checked = false;
     } 
     else 
     {
       nav.setAttribute("style", "display: none !important");
-      //checkbox.checked = false;
+	  checkbox.checked = true;
     }
   }
   else
@@ -99,7 +106,6 @@ function ToggleMobileNavBar(forceDisplay = null)
 // Start hamburger menu as closed if we're on mobile
 if(window.innerWidth <= STYLE_MAX_WIDTH)
 {
-  checkbox.checked = true;
-  ToggleMobileNavBar()
+  ToggleMobileNavBar(true);
 }
 

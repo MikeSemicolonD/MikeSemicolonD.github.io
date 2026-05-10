@@ -70,6 +70,7 @@
   background-image: url(../../assets/images/lighthouse.jpeg);
   background-size: cover;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   display: grid;
   grid-template-areas: "navbar" "content" "nav-footer";
   height: 100vh;
@@ -221,6 +222,8 @@ content {
   -ms-animation: fadeIn linear 1s;
 
   cursor: pointer;
+
+  -webkit-user-drag: none;
 }
 
 .word-animation
@@ -340,6 +343,11 @@ content {
   display: grid;
 }
 
+.content-text::selection {
+  background-color: #00000000;
+  color: rgba(0, 0, 0, 0);
+}
+
 .profile {
   border-radius: 50%;
   width: 15%;
@@ -356,6 +364,12 @@ content {
     min-width: 250px;
     -webkit-box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
     box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
+    -webkit-user-drag: none;
+}
+
+.logo-shadow-container::selection {
+  background-color: #00000000;
+  color: rgba(0, 0, 0, 0);
 }
 
 .download-link {
