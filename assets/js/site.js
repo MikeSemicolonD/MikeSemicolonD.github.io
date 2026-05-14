@@ -75,30 +75,19 @@ function resetLastDropdown()
 
 function ToggleMobileNavBar(forceDisplay = null)
 {
-  if(forceDisplay !== null)
-  {
-    if (!forceDisplay) 
-    {
-      nav.setAttribute("style", "display: flex !important");
-	  checkbox.checked = false;
-    } 
-    else 
-    {
-      nav.setAttribute("style", "display: none !important");
-	  checkbox.checked = true;
-    }
+  // forceDisplay semantics preserved from prior version:
+  //   forceDisplay === false → open the menu (checkbox unchecked = visible nav)
+  //   forceDisplay === true  → close the menu
+  //   forceDisplay === null  → derive from checkbox state
+  let open;
+  if (forceDisplay !== null) {
+    open = !forceDisplay;
+    checkbox.checked = !open;
+  } else {
+    open = !checkbox.checked;
   }
-  else
-  {
-    if (!checkbox.checked) 
-    {
-      nav.setAttribute("style", "display: flex !important");
-    } 
-    else 
-    {
-      nav.setAttribute("style", "display: none !important");
-    }
-  }
+
+  nav.classList.toggle("nav-open", open);
 }
 
 

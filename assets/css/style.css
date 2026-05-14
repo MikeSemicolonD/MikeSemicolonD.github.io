@@ -32,12 +32,56 @@
   }
 
   .nav-links {
-    display: none;
     flex-direction: column;
     margin-top: 10px;
     background-color: #444;
-    padding: 10px;
     border-radius: 5px;
+
+    /* Collapsed state — animatable */
+    max-height: 0;
+    opacity: 0;
+    padding: 0 10px;
+    overflow: hidden;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition:
+      max-height 0.35s ease,
+      opacity 0.25s ease,
+      padding 0.35s ease,
+      transform 0.35s ease,
+      visibility 0s linear 0.35s;
+  }
+
+  .nav-links.nav-open {
+    max-height: 500px;
+    opacity: 1;
+    padding: 10px;
+    visibility: visible;
+    transform: translateY(0);
+    transition:
+      max-height 0.4s ease,
+      opacity 0.3s ease 0.05s,
+      padding 0.35s ease,
+      transform 0.35s ease,
+      visibility 0s linear 0s;
+  }
+
+  .menu-icon {
+    opacity: 0.7;
+    transition: opacity 0.25s ease, color 0.2s ease, text-shadow 0.25s ease;
+  }
+
+  .menu-icon:hover {
+    opacity: 1;
+    color: white;
+    text-shadow: rgb(255, 255, 255) 1px 0 10px;
+  }
+
+  /* Note: in this codebase checkbox.checked === menu CLOSED (inverted),
+     so :not(:checked) is the open state. */
+  .menu-toggle:not(:checked) + .menu-icon {
+    opacity: 1;
+    color: white;
   }
 }
 
@@ -127,10 +171,38 @@ content {
   list-style: none;
 }
 
-.nav-links a:hover {
-  font-weight: bold;
+.nav-links a,
+.dropdown .drop-button {
+  position: relative;
+  transition: color 0.25s ease, text-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.nav-links a::after,
+.dropdown .drop-button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 0;
+  height: 1px;
+  background-color: white;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  transition: width 0.25s ease, left 0.25s ease;
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible {
   color: white;
   text-shadow: rgb(255, 255, 255) 1px 0 10px;
+  transform: translateY(-1px);
+}
+
+.nav-links a:hover::after,
+.nav-links a:focus-visible::after,
+.dropdown .drop-button:hover::after,
+.dropdown .drop-button:focus-visible::after {
+  width: 100%;
+  left: 0;
 }
 
 .nav-links a {
@@ -164,10 +236,11 @@ content {
   font-weight: 300;
 }
 
-.drop-button:hover {
-  font-weight: bold;
+.drop-button:hover,
+.drop-button:focus-visible {
   color: white;
   text-shadow: rgb(255, 255, 255) 1px 0 10px;
+  transform: translateY(-1px);
 }
 
 .drop-button :focus-visible {
