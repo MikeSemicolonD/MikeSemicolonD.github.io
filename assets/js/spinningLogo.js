@@ -22,25 +22,81 @@ var logoElement;
 
 var throwLogoClickThreshold = 8;
 var centerThreshold = 10;
-var returnOnMaxHit = 6;
+var returnOnMaxHit = 9;
 
 // Captured when the logo enters its homing phase so rotation can ease back to original orientation
 var homeStartRot = 0;
 var homeTargetRot = 0;
 var homeStartDist = 0;
 
+// Big background click counter — only fades in when the user is within BIG_FADE_WINDOW clicks of spin-off
+// BigInt so even autoclicker-level counts never overflow or lose precision
+var bigCount = 0n;
+var bigOpacity = 0;
+const BIG_FADE_WINDOW = 3;
+const BIG_SCI_LENGTH = 16;
+var bigCountElement = null;
+
+function formatBigCount(n)
+{
+  let s = n.toString();
+  if (s.length < BIG_SCI_LENGTH) return s;
+  let mantissa = s[0] + '.' + s.substring(1, 3);
+  return `${mantissa}e+${s.length - 1}`;
+}
+
+function renderBigCount()
+{
+  if (!bigCountElement) bigCountElement = document.getElementById('big-count');
+  if (!bigCountElement) return;
+  bigCountElement.textContent = formatBigCount(bigCount);
+  bigCountElement.style.opacity = bigOpacity;
+}
+
+const CONFETTI_COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ff9900', '#ffffff'];
+const CONFETTI_COUNT = 256;
+
+function triggerConfetti()
+{
+  for (let i = 0; i < CONFETTI_COUNT; i++) {
+    let piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = (Math.random() * 100) + 'vw';
+    piece.style.backgroundColor = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.animationDuration = (2 + Math.random() * 1.8) + 's';
+    piece.style.setProperty('--drift', ((Math.random() * 300) - 150) + 'px');
+    piece.style.setProperty('--rot', ((Math.random() * 720) + 360) * (Math.random() < 0.5 ? -1 : 1) + 'deg');
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 4500);
+  }
+}
+
+// Measured at load/resize so the logo stops at the top of the footer instead of an arbitrary buffer
+var bottomBuffer = 60;
+
 window.onload = window.onresize = function (event) {
   //Half the value so we can better use it without division on the hot path
 	screenWidth = window.innerWidth/2
 	screenHeight = window.innerHeight/2
+
+  let footer = document.querySelector('.nav-footer');
+  if (footer) bottomBuffer = footer.offsetHeight;
 };
 
 // Triggered from the logo
 async function triggerSpin (element)
 {
+  bigCount++;
+
+  if (speed !== 0 && bigCount % 10n === 0n) triggerConfetti();
+
   // Mid-flight click: kick the logo so it keeps flying
   if (speed !== 0)
   {
+    // Opacity stays at its launched value — don't bump during flight
+    renderBigCount();
+
     totalRot += rotAmount;
     element.style.transform = `rotate(${totalRot}deg)`;
 
@@ -63,6 +119,13 @@ async function triggerSpin (element)
 
   totalRot += rotAmount;
   clicks++;
+
+  // Fade in the big number only when within BIG_FADE_WINDOW clicks of spin-off
+  let fadeStart = throwLogoClickThreshold - BIG_FADE_WINDOW;
+  if (clicks >= fadeStart) {
+    bigOpacity = Math.min(1, (clicks - fadeStart + 1) / BIG_FADE_WINDOW);
+  }
+  renderBigCount();
 
   if (imgHeight === 0 || imgWidth === 0)
   {
@@ -101,8 +164,7 @@ async function triggerSpin (element)
   await new Promise(() => timeoutId);
 }
 
-// Extra padding so the right and bottom of the screen doesn't create scrollbar when bouncing
-// (It's not perfect but I prefer this than disabling scroll bar via style)
+// Buffer so the logo doesn't visibly clip into the navbar/footer area when bouncing
 var borderPadding = 50;
 
 //Check for border collision
@@ -123,7 +185,7 @@ function checkHitBox()
       return;
   }
         
-  if (((y+imgHeight+borderPadding) > screenHeight && yDir > 0) || ((y-imgHeight) < -(screenHeight-(borderPadding*2)) && yDir < 0)) {
+  if (((y+imgHeight+borderPadding) > screenHeight && yDir > 0) || ((y-imgHeight) < -(screenHeight-bottomBuffer) && yDir < 0)) {
       yDir *= -1;
       hitBounds();
       return;
@@ -145,13 +207,17 @@ function hitBounds()
     xDir = -(x/screenWidth)
     yDir = -(y/screenHeight)
 
+    // Cap homing speed so a gentle decay doesn't rocket back to center
+    speed = Math.min(speed, maxSpeed * 0.4);
+
     // Snap target to nearest full rotation so easing lands at original orientation
     homeStartRot = totalRot;
     homeTargetRot = Math.round(totalRot / 360) * 360;
     homeStartDist = Math.sqrt(x*x + y*y);
   }
   else{
-	  speed -= (maxSpeed * dSpeed);
+    // Multiplicative random decay — gentler than subtraction, gives "on ice" feel with variance
+    speed *= 0.90 + (Math.random() * 0.08);
   }
 }
 
@@ -196,6 +262,8 @@ function update()
       totalRot = homeTargetRot;
       clicks = 0;
       homeStartDist = 0;
+      bigOpacity = 0;
+      renderBigCount();
     }
 
   }, tickRate)
@@ -205,5 +273,7 @@ function resetLogoRot(element) {
   // Reset it's rotation based on the amount of times it's rotated
   totalRot = 0;
   clicks = 0;
+  bigOpacity = 0;
   element.style.transform = "rotate(" + totalRot + "deg)";
+  renderBigCount();
 }
