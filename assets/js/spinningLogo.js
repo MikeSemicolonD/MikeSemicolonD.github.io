@@ -55,6 +55,7 @@ function renderBigCount()
 
 const CONFETTI_COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ff9900', '#ffffff'];
 const CONFETTI_COUNT = 256;
+const CONFETTI_BURST_COUNT = 100;
 
 function triggerConfetti()
 {
@@ -72,6 +73,30 @@ function triggerConfetti()
   }
 }
 
+function burstConfettiFromCenter()
+{
+  let cx = window.innerWidth / 2;
+  let cy = window.innerHeight / 2;
+  for (let i = 0; i < CONFETTI_BURST_COUNT; i++) {
+    let p = document.createElement('div');
+    p.className = 'confetti-burst-piece';
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.backgroundColor = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+
+    let angle = Math.random() * Math.PI * 2;
+    let mag = 200 + Math.random() * 350;
+    let dx = Math.cos(angle) * mag;
+    let dy = Math.sin(angle) * mag + 250; // gravity bias so it falls after the burst
+    p.style.setProperty('--dx', dx + 'px');
+    p.style.setProperty('--dy', dy + 'px');
+    p.style.setProperty('--rot', ((Math.random() * 720) + 360) * (Math.random() < 0.5 ? -1 : 1) + 'deg');
+    p.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 3000);
+  }
+}
+
 // Measured at load/resize so the logo stops at the top of the footer instead of an arbitrary buffer
 var bottomBuffer = 60;
 
@@ -84,12 +109,32 @@ window.onload = window.onresize = function (event) {
   if (footer) bottomBuffer = footer.offsetHeight;
 };
 
+// Extends the logo's effective click hitbox beyond its visible circle, so it's
+// easier to catch when bouncing fast. Clicks on real interactive elements pass through.
+const LOGO_CLICK_MARGIN = 40;
+document.addEventListener('mousedown', function(e) {
+  if (e.target.closest('a, button, input, select, textarea, label')) return;
+  let logo = (logoElement && logoElement.children[0]) || document.querySelector('.logo.profile');
+  if (!logo) return;
+  let r = logo.getBoundingClientRect();
+  let cx = r.left + r.width / 2;
+  let cy = r.top + r.height / 2;
+  let dx = e.clientX - cx;
+  let dy = e.clientY - cy;
+  let hitR = Math.min(r.width, r.height) / 2 + LOGO_CLICK_MARGIN;
+  if (dx*dx + dy*dy < hitR * hitR) {
+    e.preventDefault();
+    triggerSpin(logo);
+  }
+});
+
 // Triggered from the logo
 async function triggerSpin (element)
 {
   bigCount++;
 
-  if (speed !== 0 && bigCount % 10n === 0n) triggerConfetti();
+  if (bigCount === BOSS_TRIGGER_COUNT) spawnBoss();
+  if (!bossActive && speed !== 0 && bigCount % 10n === 0n) triggerConfetti();
 
   // Mid-flight click: kick the logo so it keeps flying
   if (speed !== 0)
@@ -138,8 +183,10 @@ async function triggerSpin (element)
 
   clearTimeout(timeoutId);
 
-  //Send the logo spinning and bounce a few times before returning to the center on the last bounce
-  if (clicks >= throwLogoClickThreshold)
+  //Send the logo spinning and bounce a few times before returning to the center on the last bounce.
+  //In boss mode, a single click relaunches — no build-up needed when the logo is at rest.
+  let launchThreshold = bossActive ? 1 : throwLogoClickThreshold;
+  if (clicks >= launchThreshold)
   {
     speed = maxSpeed;
     
@@ -151,8 +198,12 @@ async function triggerSpin (element)
     xDir = (1 - rand);
     yDir = (1 - xDir);
 
-    x = 0;
-    y = 0;
+    if (!bossActive) {
+      // Reset to the natural rest position only outside boss mode.
+      // In boss mode, launch from wherever the logo last stopped.
+      x = 0;
+      y = 0;
+    }
 
     update();
   }else{
@@ -203,6 +254,12 @@ function hitBounds()
 
   if (hit >= returnOnMaxHit)
   {
+    if (bossActive) {
+      // During boss fight: stop where we landed instead of returning to center
+      speed = 0;
+      return;
+    }
+
     //Set direction so it speed towards the center (x = 0, y = 0)
     xDir = -(x/screenWidth)
     yDir = -(y/screenHeight)
@@ -254,15 +311,18 @@ function update()
 
       update();
     } else {
-      logoElement.style.position = "unset";
+      if (!bossActive) {
+        // Snap back to natural position and sync rotation to a multiple of 360
+        // (visually equal to 0, so CSS transition doesn't animate a spin-back)
+        logoElement.style.position = "unset";
+        totalRot = homeTargetRot;
+        // Outside boss mode, the count fades away when the spin-off counter resets
+        bigOpacity = 0;
+      }
+      // In boss mode: leave position, rotation, and the score visible
       hit = 0;
-
-      // Rotation already eased to homeTargetRot (a multiple of 360, visually equal to 0).
-      // Sync the variable to it so the CSS transition isn't triggered by a literal snap to 0.
-      totalRot = homeTargetRot;
       clicks = 0;
       homeStartDist = 0;
-      bigOpacity = 0;
       renderBigCount();
     }
 
@@ -275,5 +335,306 @@ function resetLogoRot(element) {
   clicks = 0;
   bigOpacity = 0;
   element.style.transform = "rotate(" + totalRot + "deg)";
+  renderBigCount();
+}
+
+// === Boss orb mini-game ===
+// Triggers at BOSS_TRIGGER_COUNT clicks: a glowing orb appears center-screen with a healthbar,
+// red orbs stream in from left/right toward it. The bouncing logo intercepts red orbs;
+// any orb that reaches the center damages the boss. When the boss dies, everything resets.
+const BOSS_TRIGGER_COUNT = 50n;
+const BOSS_MAX_HEALTH = 10;
+const RED_ORB_INITIAL_INTERVAL = 1200;
+const RED_ORB_MIN_INTERVAL = 220;
+const RED_ORB_INTERVAL_DECAY = 0.96; // each spawn shortens the wait by 4%
+const RED_ORB_SPEED = 2.5;
+const RED_ORB_RADIUS = 12;
+const BOSS_ORB_RADIUS = 50;
+
+var bossActive = false;
+var bossHealth = 0;
+var bossOrbEl = null;
+var bossBarFillEl = null;
+var redOrbs = [];
+var redOrbsSpawnedThisFight = 0;
+var bossSpawnTimer = null;
+var bossTickTimer = null;
+
+function spawnBoss()
+{
+  if (bossActive) return;
+  bossActive = true;
+  bossHealth = BOSS_MAX_HEALTH;
+
+  bossOrbEl = document.createElement('div');
+  bossOrbEl.className = 'boss-orb';
+  document.body.appendChild(bossOrbEl);
+
+  let bar = document.createElement('div');
+  bar.className = 'boss-healthbar';
+  let fill = document.createElement('div');
+  fill.className = 'boss-healthbar-fill';
+  bar.appendChild(fill);
+  document.body.appendChild(bar);
+  bossBarFillEl = fill;
+
+  // Trigger entrance animation on next frame (after initial styles apply)
+  requestAnimationFrame(() => {
+    if (bossOrbEl) bossOrbEl.classList.add('boss-shown');
+    if (bar) bar.classList.add('boss-shown');
+  });
+
+  burstConfettiFromCenter();
+
+  redOrbsSpawnedThisFight = 0;
+  scheduleNextRedOrb();
+  bossTickTimer = setInterval(updateBoss, 16);
+}
+
+function scheduleNextRedOrb()
+{
+  if (!bossActive) return;
+  let interval = Math.max(
+    RED_ORB_MIN_INTERVAL,
+    RED_ORB_INITIAL_INTERVAL * Math.pow(RED_ORB_INTERVAL_DECAY, redOrbsSpawnedThisFight)
+  );
+  bossSpawnTimer = setTimeout(() => {
+    spawnRedOrb();
+    redOrbsSpawnedThisFight++;
+    scheduleNextRedOrb();
+  }, interval);
+}
+
+function spawnRedOrb()
+{
+  if (!bossActive) return;
+  let fromLeft = Math.random() < 0.5;
+  let centerX = window.innerWidth / 2;
+  let centerY = window.innerHeight / 2;
+  let startX = fromLeft ? -30 : window.innerWidth + 30;
+  let startY = centerY + (Math.random() - 0.5) * window.innerHeight * 0.6;
+
+  // Initial heading: toward center but skewed by up to ±80° so the path arcs widely
+  let dx = centerX - startX;
+  let dy = centerY - startY;
+  let baseAngle = Math.atan2(dy, dx);
+  let offset = (Math.random() - 0.5) * Math.PI * 0.9;
+  let angle = baseAngle + offset;
+  let speed = RED_ORB_SPEED * (0.7 + Math.random() * 0.6);
+
+  // ~half of orbs wobble on a sine perpendicular to their motion; the rest go smoothly
+  let wobbleAmp = Math.random() < 0.5 ? 0 : (0.6 + Math.random() * 2.8);
+
+  let el = document.createElement('div');
+  el.className = 'red-orb';
+  el.style.left = startX + 'px';
+  el.style.top = startY + 'px';
+  document.body.appendChild(el);
+
+  redOrbs.push({
+    el: el,
+    x: startX,
+    y: startY,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    speed: speed,
+    // Steering strength toward center per tick — lower = wider arc, higher = tighter curve
+    homing: 0.02 + Math.random() * 0.14,
+    wobbleAmp: wobbleAmp,
+    wobbleFreq: 0.06 + Math.random() * 0.18,
+    wobblePhase: Math.random() * Math.PI * 2,
+  });
+}
+
+function updateBoss()
+{
+  if (!bossActive) return;
+
+  let centerX = window.innerWidth / 2;
+  let centerY = window.innerHeight / 2;
+
+  // Logo position (for intercept collision)
+  let logoRect = null;
+  let logo = logoElement || document.querySelector('.logo-shadow-container');
+  if (logo) {
+    let r = logo.getBoundingClientRect();
+    logoRect = {
+      cx: r.left + r.width / 2,
+      cy: r.top + r.height / 2,
+      r: Math.min(r.width, r.height) / 2,
+    };
+  }
+
+  let bossHitR2 = (BOSS_ORB_RADIUS + RED_ORB_RADIUS) ** 2;
+
+  for (let i = redOrbs.length - 1; i >= 0; i--) {
+    let orb = redOrbs[i];
+
+    // Steer current velocity toward the center for a curved approach
+    let toCx = centerX - orb.x;
+    let toCy = centerY - orb.y;
+    let toCmag = Math.sqrt(toCx*toCx + toCy*toCy) || 1;
+    let desiredVx = (toCx / toCmag) * orb.speed;
+    let desiredVy = (toCy / toCmag) * orb.speed;
+    orb.vx += (desiredVx - orb.vx) * orb.homing;
+    orb.vy += (desiredVy - orb.vy) * orb.homing;
+
+    // Perpendicular sine wobble (some orbs have amp=0 and skip the effect)
+    let wobbleX = 0, wobbleY = 0;
+    if (orb.wobbleAmp > 0) {
+      let vmag = Math.sqrt(orb.vx*orb.vx + orb.vy*orb.vy) || 1;
+      let perpX = -orb.vy / vmag;
+      let perpY =  orb.vx / vmag;
+      let w = Math.sin(orb.wobblePhase) * orb.wobbleAmp;
+      wobbleX = perpX * w;
+      wobbleY = perpY * w;
+      orb.wobblePhase += orb.wobbleFreq;
+    }
+
+    orb.x += orb.vx + wobbleX;
+    orb.y += orb.vy + wobbleY;
+    orb.el.style.left = orb.x + 'px';
+    orb.el.style.top = orb.y + 'px';
+
+    // Intercepted by the logo — explode in the direction of impact, heal a bit, count toward score
+    if (logoRect) {
+      let dx = orb.x - logoRect.cx;
+      let dy = orb.y - logoRect.cy;
+      let killR = logoRect.r + RED_ORB_RADIUS;
+      if (dx*dx + dy*dy < killR * killR) {
+        let mag = Math.sqrt(dx*dx + dy*dy) || 1;
+        explodeOrb(orb.x, orb.y, dx / mag, dy / mag);
+        bossHealth = Math.min(BOSS_MAX_HEALTH, bossHealth + 0.5);
+        updateBossHealthbar();
+        orb.el.remove();
+        redOrbs.splice(i, 1);
+        bigCount++;
+        bigOpacity = 1;
+        renderBigCount();
+        continue;
+      }
+    }
+
+    // Reached the boss
+    let dx = orb.x - centerX;
+    let dy = orb.y - centerY;
+    if (dx*dx + dy*dy < bossHitR2) {
+      bossHealth--;
+      updateBossHealthbar();
+      killRedOrb(i);
+      if (bossOrbEl) {
+        bossOrbEl.classList.remove('boss-hit');
+        void bossOrbEl.offsetWidth;
+        bossOrbEl.classList.add('boss-hit');
+      }
+      if (bossHealth <= 0) {
+        endBoss();
+        return;
+      }
+    }
+  }
+}
+
+function killRedOrb(i)
+{
+  let orb = redOrbs[i];
+  orb.el.classList.add('red-orb-poof');
+  setTimeout(() => orb.el.remove(), 300);
+  redOrbs.splice(i, 1);
+}
+
+var lastScoreEl = null;
+function showLastScore(scoreCount)
+{
+  if (!lastScoreEl) {
+    lastScoreEl = document.createElement('div');
+    lastScoreEl.className = 'last-score';
+    let footer = document.querySelector('.nav-footer');
+    if (footer) footer.appendChild(lastScoreEl);
+  }
+  lastScoreEl.textContent = `Score: ${formatBigCount(scoreCount)}`;
+}
+
+const SPARK_COLORS = ['#ff4400', '#ff7722', '#ffbb44', '#ffee88', '#ffffff'];
+const SPARK_COUNT = 18;
+
+function explodeOrb(originX, originY, dirX, dirY)
+{
+  for (let i = 0; i < SPARK_COUNT; i++) {
+    let s = document.createElement('div');
+    s.className = 'orb-spark';
+    let color = SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)];
+    s.style.left = originX + 'px';
+    s.style.top = originY + 'px';
+    s.style.backgroundColor = color;
+    s.style.color = color;
+
+    // 60% along impact direction + 40% random spread for a fan-shaped burst
+    let angle = Math.random() * Math.PI * 2;
+    let spread = 0.45;
+    let mag = 70 + Math.random() * 90;
+    let vx = (dirX * (1 - spread) + Math.cos(angle) * spread) * mag;
+    let vy = (dirY * (1 - spread) + Math.sin(angle) * spread) * mag;
+
+    s.style.setProperty('--dx', vx + 'px');
+    s.style.setProperty('--dy', vy + 'px');
+    s.style.animationDuration = (0.6 + Math.random() * 0.5) + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1200);
+  }
+}
+
+function updateBossHealthbar()
+{
+  if (!bossBarFillEl) return;
+  let pct = Math.max(0, bossHealth / BOSS_MAX_HEALTH);
+  bossBarFillEl.style.width = (pct * 100) + '%';
+}
+
+function endBoss()
+{
+  // Capture the score (count at moment of defeat) before resetting
+  showLastScore(bigCount);
+
+  bossActive = false;
+  clearTimeout(bossSpawnTimer);
+  clearInterval(bossTickTimer);
+  bossSpawnTimer = null;
+  bossTickTimer = null;
+
+  if (bossOrbEl) bossOrbEl.remove();
+  bossOrbEl = null;
+  if (bossBarFillEl && bossBarFillEl.parentElement) bossBarFillEl.parentElement.remove();
+  bossBarFillEl = null;
+  redOrbs.forEach(o => o.el.remove());
+  redOrbs = [];
+
+  // Full reset: stop motion, snap rotation to a multiple of 360 (visually 0°
+  // so the CSS transition doesn't animate a spin-back), zero out state
+  speed = 0;
+  hit = 0;
+  x = 0;
+  y = 0;
+  homeStartRot = 0;
+  homeTargetRot = 0;
+  homeStartDist = 0;
+
+  let snap = Math.round(totalRot / 360) * 360;
+  totalRot = snap;
+
+  if (logoElement) {
+    logoElement.style.position = "unset";
+    logoElement.style.left = '';
+    logoElement.style.bottom = '';
+    if (logoElement.children[0]) {
+      logoElement.children[0].style.transform = `rotate(${snap}deg)`;
+    }
+  }
+
+  bigCount = 0n;
+  bigOpacity = 0;
+  clicks = 0;
+  clearTimeout(timeoutId);
+
   renderBigCount();
 }

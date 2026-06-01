@@ -1,5 +1,47 @@
 
-// Setting the background relative to the time of day for the user (day or night)
-const hour = new Date().getHours();
+// Background mode for the home page: 'auto' (time-of-day), 'light', or 'dark'.
+// Default is 'auto' — only persists a manual override via localStorage.
 
-document.getElementById("background").style.backgroundImage = (hour > 5 && hour < 18) ? "url(assets/images/lighthouse.jpeg)" : "url(assets/images/lake.jpeg)";
+const BG_KEY = 'bg-mode';
+const BG_DAY = 'url(assets/images/lighthouse.jpeg)';
+const BG_NIGHT = 'url(assets/images/lake.jpeg)';
+
+function isDaytime() {
+  const hour = new Date().getHours();
+  return hour > 5 && hour < 18;
+}
+
+function getThemeMode() {
+  let stored = null;
+  try { stored = localStorage.getItem(BG_KEY); } catch (e) {}
+  return (stored === 'light' || stored === 'dark') ? stored : 'auto';
+}
+
+function applyTheme(mode) {
+  let bg;
+  if (mode === 'light')      bg = BG_DAY;
+  else if (mode === 'dark')  bg = BG_NIGHT;
+  else                       bg = isDaytime() ? BG_DAY : BG_NIGHT;
+
+  let bgEl = document.getElementById('background');
+  if (bgEl) bgEl.style.backgroundImage = bg;
+
+  let btn = document.querySelector('.theme-button');
+  if (btn) {
+    btn.textContent = mode === 'light' ? '☀️' : mode === 'dark' ? '🌙' : '🕐';
+    btn.dataset.mode = mode;
+  }
+}
+
+function cycleTheme() {
+  const order = ['auto', 'light', 'dark'];
+  const current = getThemeMode();
+  const next = order[(order.indexOf(current) + 1) % order.length];
+  try {
+    if (next === 'auto') localStorage.removeItem(BG_KEY);
+    else                 localStorage.setItem(BG_KEY, next);
+  } catch (e) {}
+  applyTheme(next);
+}
+
+applyTheme(getThemeMode());
