@@ -125,6 +125,24 @@ content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.bg-fade-overlay {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.7s ease;
+}
+
+.bg-fade-overlay.bg-fade-show {
+  opacity: 1;
 }
 
 .navbar {
@@ -190,6 +208,31 @@ content {
   transform: translateY(-1px) scale(1.12);
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
   outline: none;
+}
+
+.mute-button {
+  position: relative;
+  padding: 0 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: rgb(200, 200, 200);
+  transition: transform 0.2s ease, filter 0.25s ease;
+  order: 2;
+}
+
+.mute-button:hover,
+.mute-button:focus-visible {
+  transform: translateY(-1px) scale(1.12);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+  outline: none;
+}
+
+/* Hidden until the logo mini-game starts (revealed by gameAudio.js) */
+.mute-button.mute-hidden {
+  display: none;
 }
 
 .nav-links {
@@ -501,6 +544,8 @@ content {
   white-space: nowrap;
   z-index: 0;
   transition: opacity 0.15s linear;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 .confetti-piece {

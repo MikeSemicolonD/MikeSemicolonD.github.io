@@ -59,6 +59,8 @@ const CONFETTI_BURST_COUNT = 100;
 
 function triggerConfetti()
 {
+  if (window.gameSound) window.gameSound.play('confetti');
+
   for (let i = 0; i < CONFETTI_COUNT; i++) {
     let piece = document.createElement('div');
     piece.className = 'confetti-piece';
@@ -131,6 +133,9 @@ document.addEventListener('mousedown', function(e) {
 // Triggered from the logo
 async function triggerSpin (element)
 {
+  // First interaction starts the game — reveal the sound toggle from here on
+  if (window.gameSound) window.gameSound.reveal();
+
   bigCount++;
 
   if (bigCount === BOSS_TRIGGER_COUNT) spawnBoss();
@@ -139,6 +144,8 @@ async function triggerSpin (element)
   // Mid-flight click: kick the logo so it keeps flying
   if (speed !== 0)
   {
+    if (window.gameSound) window.gameSound.play('kick');
+
     // Opacity stays at its launched value — don't bump during flight
     renderBigCount();
 
@@ -188,8 +195,10 @@ async function triggerSpin (element)
   let launchThreshold = bossActive ? 1 : throwLogoClickThreshold;
   if (clicks >= launchThreshold)
   {
+    if (window.gameSound) window.gameSound.play('spin');
+
     speed = maxSpeed;
-    
+
     dSpeed = (1 / (returnOnMaxHit+1));
 
     //Pick a random direction and go off at a constant speed
@@ -207,6 +216,8 @@ async function triggerSpin (element)
 
     update();
   }else{
+    if (window.gameSound) window.gameSound.play('click');
+
     timeoutId = setTimeout(() => {
       resetLogoRot(element);
     }, 3500)
@@ -245,6 +256,7 @@ function checkHitBox()
 
 function hitBounds()
 {
+  if (window.gameSound) window.gameSound.play('bounce');
 
 	hit++;
 
@@ -286,9 +298,9 @@ function update()
   setTimeout(() => {
     if (speed !== 0) {
 
-      //Move the logo
-      x += (speed * xDir);
-      y += (speed * yDir);
+      //Move the logo (timeScale enables hit-stop slow-mo during boss fight)
+      x += (speed * xDir * timeScale);
+      y += (speed * yDir * timeScale);
 
       logoElement.style.position = "relative";
       logoElement.style.bottom = `${y}px`;
@@ -345,11 +357,23 @@ function resetLogoRot(element) {
 const BOSS_TRIGGER_COUNT = 50n;
 const BOSS_MAX_HEALTH = 10;
 const RED_ORB_INITIAL_INTERVAL = 1200;
-const RED_ORB_MIN_INTERVAL = 220;
+const RED_ORB_MIN_INTERVAL = 150;
 const RED_ORB_INTERVAL_DECAY = 0.96; // each spawn shortens the wait by 4%
 const RED_ORB_SPEED = 2.5;
 const RED_ORB_RADIUS = 12;
 const BOSS_ORB_RADIUS = 50;
+
+// Boss orbit kicks in after this many logo intercepts in a single fight
+const BOSS_MOVE_TRIGGER = 25;
+const BOSS_ORBIT_RADIUS = 175;
+const BOSS_ORBIT_SPEED = 0.0025; // radians per tick
+// When the orbit starts, the radius eases out from 0 → BOSS_ORBIT_RADIUS so the
+// boss spirals out of the center instead of snapping to the orbit edge
+const BOSS_ORBIT_RAMP = 0.04; // per tick — fraction of remaining radius closed
+
+// Slow-mo hit-stop on every logo intercept — drops to TIMESCALE_HIT then ramps back to 1
+const TIMESCALE_HIT = 0.15;
+const TIMESCALE_RECOVER = 0.25; // per boss tick (16ms)
 
 var bossActive = false;
 var bossHealth = 0;
@@ -359,10 +383,16 @@ var redOrbs = [];
 var redOrbsSpawnedThisFight = 0;
 var bossSpawnTimer = null;
 var bossTickTimer = null;
+var bossOrbsHitByLogo = 0;
+var bossMoving = false;
+var bossAngle = 0;
+var bossOrbitRadius = 0; // eases up to BOSS_ORBIT_RADIUS once the orbit begins
+var timeScale = 1;
 
 function spawnBoss()
 {
   if (bossActive) return;
+  if (window.gameSound) window.gameSound.play('bossSpawn');
   bossActive = true;
   bossHealth = BOSS_MAX_HEALTH;
 
@@ -446,12 +476,39 @@ function spawnRedOrb()
   });
 }
 
+function placeBossOrb(cx, cy)
+{
+  if (bossOrbEl) {
+    bossOrbEl.style.left = cx + 'px';
+    bossOrbEl.style.top  = cy + 'px';
+  }
+  if (bossBarFillEl && bossBarFillEl.parentElement) {
+    bossBarFillEl.parentElement.style.left = cx + 'px';
+    bossBarFillEl.parentElement.style.top  = (cy - 90) + 'px';
+  }
+}
+
 function updateBoss()
 {
   if (!bossActive) return;
 
-  let centerX = window.innerWidth / 2;
-  let centerY = window.innerHeight / 2;
+  // Recover from hit-stop slow-mo
+  if (timeScale < 1) timeScale = Math.min(1, timeScale + TIMESCALE_RECOVER);
+
+  // Boss position: stationary at viewport center until BOSS_MOVE_TRIGGER intercepts,
+  // then orbits in a fixed-radius circle
+  let centerX, centerY;
+  if (bossMoving) {
+    bossAngle += BOSS_ORBIT_SPEED * timeScale;
+    // Ease the radius out from the center so the orbit spirals in smoothly
+    bossOrbitRadius += (BOSS_ORBIT_RADIUS - bossOrbitRadius) * BOSS_ORBIT_RAMP * timeScale;
+    centerX = window.innerWidth / 2 + bossOrbitRadius * Math.cos(bossAngle);
+    centerY = window.innerHeight / 2 + bossOrbitRadius * Math.sin(bossAngle);
+  } else {
+    centerX = window.innerWidth / 2;
+    centerY = window.innerHeight / 2;
+  }
+  placeBossOrb(centerX, centerY);
 
   // Logo position (for intercept collision)
   let logoRect = null;
@@ -470,14 +527,14 @@ function updateBoss()
   for (let i = redOrbs.length - 1; i >= 0; i--) {
     let orb = redOrbs[i];
 
-    // Steer current velocity toward the center for a curved approach
+    // Steer current velocity toward the boss's current position for a curved approach
     let toCx = centerX - orb.x;
     let toCy = centerY - orb.y;
     let toCmag = Math.sqrt(toCx*toCx + toCy*toCy) || 1;
     let desiredVx = (toCx / toCmag) * orb.speed;
     let desiredVy = (toCy / toCmag) * orb.speed;
-    orb.vx += (desiredVx - orb.vx) * orb.homing;
-    orb.vy += (desiredVy - orb.vy) * orb.homing;
+    orb.vx += (desiredVx - orb.vx) * orb.homing * timeScale;
+    orb.vy += (desiredVy - orb.vy) * orb.homing * timeScale;
 
     // Perpendicular sine wobble (some orbs have amp=0 and skip the effect)
     let wobbleX = 0, wobbleY = 0;
@@ -488,11 +545,11 @@ function updateBoss()
       let w = Math.sin(orb.wobblePhase) * orb.wobbleAmp;
       wobbleX = perpX * w;
       wobbleY = perpY * w;
-      orb.wobblePhase += orb.wobbleFreq;
+      orb.wobblePhase += orb.wobbleFreq * timeScale;
     }
 
-    orb.x += orb.vx + wobbleX;
-    orb.y += orb.vy + wobbleY;
+    orb.x += (orb.vx + wobbleX) * timeScale;
+    orb.y += (orb.vy + wobbleY) * timeScale;
     orb.el.style.left = orb.x + 'px';
     orb.el.style.top = orb.y + 'px';
 
@@ -503,6 +560,7 @@ function updateBoss()
       let killR = logoRect.r + RED_ORB_RADIUS;
       if (dx*dx + dy*dy < killR * killR) {
         let mag = Math.sqrt(dx*dx + dy*dy) || 1;
+        if (window.gameSound) window.gameSound.play('intercept');
         explodeOrb(orb.x, orb.y, dx / mag, dy / mag);
         bossHealth = Math.min(BOSS_MAX_HEALTH, bossHealth + 0.5);
         updateBossHealthbar();
@@ -511,6 +569,14 @@ function updateBoss()
         bigCount++;
         bigOpacity = 1;
         renderBigCount();
+        // Trigger hit-stop slow-mo and tick the orbit threshold
+        timeScale = TIMESCALE_HIT;
+        bossOrbsHitByLogo++;
+        if (!bossMoving && bossOrbsHitByLogo >= BOSS_MOVE_TRIGGER) {
+          bossMoving = true;
+          bossAngle = 0;
+          bossOrbitRadius = 0; // start at center; updateBoss eases it outward
+        }
         continue;
       }
     }
@@ -520,6 +586,7 @@ function updateBoss()
     let dy = orb.y - centerY;
     if (dx*dx + dy*dy < bossHitR2) {
       bossHealth--;
+      if (window.gameSound) window.gameSound.play('bossHit');
       updateBossHealthbar();
       killRedOrb(i);
       if (bossOrbEl) {
@@ -593,6 +660,8 @@ function updateBossHealthbar()
 
 function endBoss()
 {
+  if (window.gameSound) window.gameSound.play('bossDeath');
+
   // Capture the score (count at moment of defeat) before resetting
   showLastScore(bigCount);
 
@@ -635,6 +704,13 @@ function endBoss()
   bigOpacity = 0;
   clicks = 0;
   clearTimeout(timeoutId);
+
+  // Reset boss-fight-only state so the next fight starts clean
+  bossOrbsHitByLogo = 0;
+  bossMoving = false;
+  bossAngle = 0;
+  bossOrbitRadius = 0;
+  timeScale = 1;
 
   renderBigCount();
 }

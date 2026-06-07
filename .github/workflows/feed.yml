@@ -1,0 +1,38 @@
+name: Regenerate RSS feed
+
+on:
+  push:
+    branches: [staging]
+    paths:
+      - 'posts.json'
+      - 'generate-feed.js'
+      - '.github/workflows/feed.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Regenerate feed.xml
+        run: node generate-feed.js
+
+      - name: Commit if changed
+        run: |
+          if [[ -n "$(git status --porcelain feed.xml)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add feed.xml
+            git commit -m "Regenerate feed.xml from posts.json"
+            git push
+          else
+            echo "No changes to feed.xml."
+          fi

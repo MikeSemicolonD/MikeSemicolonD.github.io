@@ -24,13 +24,38 @@ function applyTheme(mode) {
   else                       bg = isDaytime() ? BG_DAY : BG_NIGHT;
 
   let bgEl = document.getElementById('background');
-  if (bgEl) bgEl.style.backgroundImage = bg;
+  if (bgEl) {
+    let current = bgEl.style.backgroundImage;
+    if (!current) {
+      // Initial paint — no transition
+      bgEl.style.backgroundImage = bg;
+    } else if (current !== bg) {
+      crossfadeBg(bgEl, bg);
+    }
+  }
 
   let btn = document.querySelector('.theme-button');
   if (btn) {
     btn.textContent = mode === 'light' ? '☀️' : mode === 'dark' ? '🌙' : '🕐';
     btn.dataset.mode = mode;
   }
+}
+
+function crossfadeBg(bgEl, newBg) {
+  // Drop any in-progress overlay so we don't stack fades on rapid clicks
+  document.querySelectorAll('.bg-fade-overlay').forEach(o => o.remove());
+
+  let overlay = document.createElement('div');
+  overlay.className = 'bg-fade-overlay';
+  overlay.style.backgroundImage = newBg;
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => overlay.classList.add('bg-fade-show'));
+
+  setTimeout(() => {
+    bgEl.style.backgroundImage = newBg;
+    overlay.remove();
+  }, 750);
 }
 
 function cycleTheme() {
