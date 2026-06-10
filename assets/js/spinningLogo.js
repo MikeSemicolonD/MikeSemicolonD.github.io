@@ -18,6 +18,12 @@ var screenWidth = 0, screenHeight = 0;
 
 var imgWidth = 0, imgHeight = 0;
 
+// How far the logo's resting center sits below the viewport's vertical center.
+// On landscape/short viewports the logo stacks under the welcome text, well below
+// center, so the bounce window must be anchored to the viewport (where the boss
+// lives at top:50%) instead of being symmetric around the logo's rest position.
+var restOffsetY = 0;
+
 var logoElement;
 
 var throwLogoClickThreshold = 8;
@@ -61,6 +67,8 @@ function triggerConfetti()
 {
   if (window.gameSound) window.gameSound.play('confetti');
 
+  // Build into a fragment so all pieces hit the DOM in a single reflow
+  let frag = document.createDocumentFragment();
   for (let i = 0; i < CONFETTI_COUNT; i++) {
     let piece = document.createElement('div');
     piece.className = 'confetti-piece';
@@ -70,15 +78,17 @@ function triggerConfetti()
     piece.style.animationDuration = (2 + Math.random() * 1.8) + 's';
     piece.style.setProperty('--drift', ((Math.random() * 300) - 150) + 'px');
     piece.style.setProperty('--rot', ((Math.random() * 720) + 360) * (Math.random() < 0.5 ? -1 : 1) + 'deg');
-    document.body.appendChild(piece);
+    frag.appendChild(piece);
     setTimeout(() => piece.remove(), 4500);
   }
+  document.body.appendChild(frag);
 }
 
 function burstConfettiFromCenter()
 {
   let cx = window.innerWidth / 2;
   let cy = window.innerHeight / 2;
+  let frag = document.createDocumentFragment();
   for (let i = 0; i < CONFETTI_BURST_COUNT; i++) {
     let p = document.createElement('div');
     p.className = 'confetti-burst-piece';
@@ -94,9 +104,10 @@ function burstConfettiFromCenter()
     p.style.setProperty('--dy', dy + 'px');
     p.style.setProperty('--rot', ((Math.random() * 720) + 360) * (Math.random() < 0.5 ? -1 : 1) + 'deg');
     p.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
-    document.body.appendChild(p);
+    frag.appendChild(p);
     setTimeout(() => p.remove(), 3000);
   }
+  document.body.appendChild(frag);
 }
 
 // Measured at load/resize so the logo stops at the top of the footer instead of an arbitrary buffer
@@ -109,6 +120,33 @@ window.onload = window.onresize = function (event) {
 
   let footer = document.querySelector('.nav-footer');
   if (footer) bottomBuffer = footer.offsetHeight;
+
+  // The logo scales with viewport height on short/landscape screens, so its
+  // cached half-size is stale after a resize/rotation. Re-measure directly so
+  // a mid-flight rotation doesn't leave the hitbox at 0.
+  let logoImg = document.querySelector('.logo.profile');
+  if (logoImg && logoImg.clientWidth) {
+    imgWidth = logoImg.clientWidth / 2;
+    imgHeight = logoImg.clientHeight / 2;
+  } else {
+    imgWidth = 0;
+    imgHeight = 0;
+  }
+
+  // Measure where the logo rests relative to the viewport center. The container's
+  // rect already includes any active flight offset (bottom: y px raises it), so
+  // add y back to recover the true rest center.
+  let container = document.querySelector('.logo-shadow-container');
+  if (container) {
+    let cr = container.getBoundingClientRect();
+    let restCenterY = cr.top + cr.height / 2 + y;
+    restOffsetY = restCenterY - window.innerHeight / 2;
+  } else {
+    restOffsetY = 0;
+  }
+
+  // Less buffer on short viewports so the smaller play area isn't eaten up
+  borderPadding = window.innerHeight < 600 ? 20 : 50;
 };
 
 // Extends the logo's effective click hitbox beyond its visible circle, so it's
@@ -222,8 +260,6 @@ async function triggerSpin (element)
       resetLogoRot(element);
     }, 3500)
   }
-
-  await new Promise(() => timeoutId);
 }
 
 // Buffer so the logo doesn't visibly clip into the navbar/footer area when bouncing
@@ -247,7 +283,10 @@ function checkHitBox()
       return;
   }
         
-  if (((y+imgHeight+borderPadding) > screenHeight && yDir > 0) || ((y-imgHeight) < -(screenHeight-bottomBuffer) && yDir < 0)) {
+  // Vertical caps are shifted by restOffsetY so the play area tracks the viewport
+  // (top edge reaches near the top, bottom edge stops at the footer) regardless of
+  // where the logo rests in the page layout.
+  if (((y+imgHeight+borderPadding) > screenHeight + restOffsetY && yDir > 0) || ((y-imgHeight) < -(screenHeight-bottomBuffer) + restOffsetY && yDir < 0)) {
       yDir *= -1;
       hitBounds();
       return;
@@ -627,6 +666,7 @@ const SPARK_COUNT = 18;
 
 function explodeOrb(originX, originY, dirX, dirY)
 {
+  let frag = document.createDocumentFragment();
   for (let i = 0; i < SPARK_COUNT; i++) {
     let s = document.createElement('div');
     s.className = 'orb-spark';
@@ -646,9 +686,10 @@ function explodeOrb(originX, originY, dirX, dirY)
     s.style.setProperty('--dx', vx + 'px');
     s.style.setProperty('--dy', vy + 'px');
     s.style.animationDuration = (0.6 + Math.random() * 0.5) + 's';
-    document.body.appendChild(s);
+    frag.appendChild(s);
     setTimeout(() => s.remove(), 1200);
   }
+  document.body.appendChild(frag);
 }
 
 function updateBossHealthbar()

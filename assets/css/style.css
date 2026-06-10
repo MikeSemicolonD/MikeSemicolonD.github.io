@@ -27,15 +27,31 @@
 
 /* Mobile styles */
 @media (max-width: 768px) {
+  /* Desktop uses 20% side padding to center the bar; far too much on a phone */
+  .navbar {
+    padding: 12px 16px;
+  }
+
   .menu-icon {
     display: block !important;
+    /* Push the theme/sound/rss buttons to the right edge */
+    margin-right: auto;
   }
 
   .nav-links {
+    /* Drop the menu out of flow so it opens as a panel below the bar
+       instead of wedging inline next to the hamburger */
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 16px;        /* aligns under the hamburger (navbar padding-left) */
+    z-index: 20;
     flex-direction: column;
-    margin-top: 10px;
+    align-items: flex-start;
+    min-width: 150px;
+    margin: 0;
     background-color: #444;
     border-radius: 5px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 
     /* Collapsed state — animatable */
     max-height: 0;
@@ -524,6 +540,25 @@ content {
     -webkit-user-drag: none;
     position: relative;
     z-index: 1;
+}
+
+/* Short / landscape viewports (e.g. phones rotated sideways): the fixed 250px
+   logo leaves almost no vertical room to bounce, making the game unplayable.
+   Scale it to the available height so there's space to play. */
+@media (max-height: 600px) {
+  .profile {
+    width: 40vh;
+    min-width: 120px;
+    max-width: 40vh;
+  }
+
+  .logo-shadow-container {
+    width: 40vh;
+    height: 40vh;
+    min-width: 120px;
+    min-height: 120px;
+    max-width: 40vh;
+  }
 }
 
 .big-count {
