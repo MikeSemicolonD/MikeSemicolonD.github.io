@@ -1,0 +1,42 @@
+name: Publish staging to main
+
+# Promotes the staging branch to main (the GitHub Pages publish branch).
+# Runs on every staging push, and again after "Regenerate RSS feed" completes
+# so a freshly regenerated feed.xml gets carried over to main too.
+on:
+  push:
+    branches: [staging]
+  workflow_run:
+    workflows: ["Regenerate RSS feed"]
+    types: [completed]
+    branches: [staging]
+  workflow_dispatch:
+
+# Serialize runs so the push-triggered and feed-triggered promotions can't
+# race each other into a non-fast-forward conflict on main.
+concurrency:
+  group: publish-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # When triggered by the feed workflow, only promote if that run succeeded —
+    # don't publish a half-regenerated feed. Other triggers always proceed.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      # Always grab the current staging tip (ref: staging), so we pick up any
+      # feed.xml the regen workflow just committed regardless of which event
+      # triggered us. fetch-depth: 0 so the fast-forward to main resolves cleanly.
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+
+      # Plain fast-forward push — fails loudly if main has diverged rather than
+      # clobbering it (main is only ever written by this workflow).
+      - name: Promote staging to main
+        run: git push origin HEAD:main
