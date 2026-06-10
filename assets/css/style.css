@@ -175,6 +175,17 @@ content {
   align-items: center;
 }
 
+/* Suppress the blue tap-highlight flash mobile browsers paint over buttons,
+   links and the logo on touch. Desktop never shows it, so it's mobile-only. */
+button,
+a,
+label,
+.menu-icon,
+.logo,
+.logo-shadow-container {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .menu-toggle {
   display: none;
 }
@@ -540,6 +551,12 @@ content {
     -webkit-user-drag: none;
     position: relative;
     z-index: 1;
+    /* Match the logo's 1s ease so the shadow box resizes in sync with it.
+       Only size + shadow are transitioned — NOT left/bottom, which the game
+       updates every tick and must stay instant. */
+    transition: width 1s linear, height 1s linear,
+                min-width 1s linear, min-height 1s linear,
+                box-shadow 1s linear;
 }
 
 /* Short / landscape viewports (e.g. phones rotated sideways): the fixed 250px

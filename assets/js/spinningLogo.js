@@ -168,8 +168,39 @@ document.addEventListener('mousedown', function(e) {
   }
 });
 
-// Triggered from the logo
-async function triggerSpin (element)
+// External input entry point (see deviceShake.js): a physical shake registers as a
+// hit whose launch direction/force come from the shake instead of being random.
+// dirX/dirY: shake direction vector (any scale). force: ~[0,1] normalized strength.
+window.triggerShakeHit = function (dirX, dirY, force) {
+  let logo = (logoElement && logoElement.children[0]) || document.querySelector('.logo.profile');
+  if (!logo) return;
+  triggerSpin(logo, { dirX: dirX, dirY: dirY, force: force });
+};
+
+// Clamp helper for force->speed mapping
+function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+// Lowest launch speed a (weak) shake can produce, so a gentle nudge still moves
+var minLaunchSpeed = 4;
+
+// Resolves an external shake override into xDir/yDir/speed. Returns true if applied.
+// override = { dirX, dirY, force }; force is an abstract magnitude normalized by the caller.
+function applyShakeOverride(override)
+{
+  if (!override) return false;
+  let len = Math.hypot(override.dirX, override.dirY);
+  if (len === 0) return false;
+  xDir = override.dirX / len;
+  yDir = override.dirY / len;
+  // force is delivered pre-normalized to ~[0,1]; map onto [minLaunchSpeed, maxSpeed]
+  let f = clamp(override.force, 0, 1);
+  speed = clamp(minLaunchSpeed + f * (maxSpeed - minLaunchSpeed), minLaunchSpeed, maxSpeed);
+  return true;
+}
+
+// Triggered from the logo. `override` (optional) carries a shake's direction + force;
+// when absent the launch direction is random as before.
+async function triggerSpin (element, override)
 {
   // First interaction starts the game — reveal the sound toggle from here on
   if (window.gameSound) window.gameSound.reveal();
@@ -193,13 +224,15 @@ async function triggerSpin (element)
     hit = 0;
     speed = maxSpeed;
 
-    let rand = Math.random();
-    xDir = (1 - rand);
-    yDir = (1 - xDir);
+    if (!applyShakeOverride(override)) {
+      let rand = Math.random();
+      xDir = (1 - rand);
+      yDir = (1 - xDir);
 
-    // Randomize sign so the kick can go any of the four diagonals
-    if (Math.random() < 0.5) xDir *= -1;
-    if (Math.random() < 0.5) yDir *= -1;
+      // Randomize sign so the kick can go any of the four diagonals
+      if (Math.random() < 0.5) xDir *= -1;
+      if (Math.random() < 0.5) yDir *= -1;
+    }
 
     return;
   }
@@ -239,11 +272,13 @@ async function triggerSpin (element)
 
     dSpeed = (1 / (returnOnMaxHit+1));
 
-    //Pick a random direction and go off at a constant speed
-    let rand = Math.random();
+    if (!applyShakeOverride(override)) {
+      //Pick a random direction and go off at a constant speed
+      let rand = Math.random();
 
-    xDir = (1 - rand);
-    yDir = (1 - xDir);
+      xDir = (1 - rand);
+      yDir = (1 - xDir);
+    }
 
     if (!bossActive) {
       // Reset to the natural rest position only outside boss mode.
