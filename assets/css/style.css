@@ -134,6 +134,7 @@
   display: grid;
   grid-template-areas: "navbar" "content" "nav-footer";
   height: 100vh;
+  background-color: black;
 }
 
 content {
