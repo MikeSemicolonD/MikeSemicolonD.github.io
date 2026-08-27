@@ -30,7 +30,7 @@ function applyTheme(mode) {
       // Initial paint — no transition
       bgEl.style.backgroundImage = bg;
     } else if (current !== bg) {
-      crossfadeBg(bgEl, bg);
+      requestFade(bgEl, bg);
     }
   }
 
@@ -41,21 +41,51 @@ function applyTheme(mode) {
   }
 }
 
-function crossfadeBg(bgEl, newBg) {
-  // Drop any in-progress overlay so we don't stack fades on rapid clicks
-  document.querySelectorAll('.bg-fade-overlay').forEach(o => o.remove());
+// Crossfade duration — keep in sync with .bg-fade-overlay's transition in style.css
+const FADE_MS = 750;
 
+// A running fade always finishes (never interrupted, so no snap-back flicker).
+// While one runs, the latest requested target is parked in a single pending slot;
+// rapid clicks just overwrite it, so the queue collapses to at most one follow-up.
+let activeFade = null;   // { target, overlay, timer } or null
+let pendingBg = null;    // latest desired background while a fade is in flight
+
+function requestFade(bgEl, target) {
+  if (activeFade) {
+    // A fade is already running — coalesce: remember only the latest target.
+    pendingBg = target;
+    return;
+  }
+  startFade(bgEl, target);
+}
+
+function startFade(bgEl, target) {
   let overlay = document.createElement('div');
   overlay.className = 'bg-fade-overlay';
-  overlay.style.backgroundImage = newBg;
+  overlay.style.backgroundImage = target;
   document.body.appendChild(overlay);
 
   requestAnimationFrame(() => overlay.classList.add('bg-fade-show'));
 
-  setTimeout(() => {
-    bgEl.style.backgroundImage = newBg;
-    overlay.remove();
-  }, 750);
+  let timer = setTimeout(() => finishFade(bgEl), FADE_MS);
+  activeFade = { target, overlay, timer };
+}
+
+function finishFade(bgEl) {
+  if (!activeFade) return;
+
+  bgEl.style.backgroundImage = activeFade.target;
+  activeFade.overlay.remove();
+  activeFade = null;
+
+  // Chain to the latest pending target, unless it's already what we're showing.
+  if (pendingBg !== null) {
+    let next = pendingBg;
+    pendingBg = null;
+    if (next !== bgEl.style.backgroundImage) {
+      startFade(bgEl, next);
+    }
+  }
 }
 
 function cycleTheme() {
