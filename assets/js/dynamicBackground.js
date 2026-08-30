@@ -41,25 +41,30 @@ function applyTheme(mode) {
   }
 }
 
-// Crossfade duration — keep in sync with .bg-fade-overlay's transition in style.css
-const FADE_MS = 750;
+const FADE_MS = 750; // keep in sync with .bg-fade-overlay transition in style.css
 
-// A running fade always finishes (never interrupted, so no snap-back flicker).
-// While one runs, the latest requested target is parked in a single pending slot;
-// rapid clicks just overwrite it, so the queue collapses to at most one follow-up.
+// Running fades always finish (no snap); every transition is queued and plays in full.
 let activeFade = null;   // { target, overlay, timer } or null
-let pendingBg = null;    // latest desired background while a fade is in flight
+let fadeQueue = [];      // upcoming target backgrounds, in order
+
+const MAX_QUEUE = 2; // cap pending fades so mashing can't build a long tail
 
 function requestFade(bgEl, target) {
-  if (activeFade) {
-    // A fade is already running — coalesce: remember only the latest target.
-    pendingBg = target;
-    return;
-  }
-  startFade(bgEl, target);
+  // skip a request for the image we're already heading to
+  let last = fadeQueue.length ? fadeQueue[fadeQueue.length - 1]
+           : activeFade ? activeFade.target
+           : null;
+  if (target === last) return;
+
+  fadeQueue.push(target);
+  while (fadeQueue.length > MAX_QUEUE) fadeQueue.shift();  // drop oldest pending
+
+  if (!activeFade) startNextFade(bgEl);
 }
 
-function startFade(bgEl, target) {
+function startNextFade(bgEl) {
+  let target = fadeQueue.shift();
+
   let overlay = document.createElement('div');
   overlay.className = 'bg-fade-overlay';
   overlay.style.backgroundImage = target;
@@ -78,14 +83,7 @@ function finishFade(bgEl) {
   activeFade.overlay.remove();
   activeFade = null;
 
-  // Chain to the latest pending target, unless it's already what we're showing.
-  if (pendingBg !== null) {
-    let next = pendingBg;
-    pendingBg = null;
-    if (next !== bgEl.style.backgroundImage) {
-      startFade(bgEl, next);
-    }
-  }
+  if (fadeQueue.length) startNextFade(bgEl);
 }
 
 function cycleTheme() {
