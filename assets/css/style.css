@@ -137,7 +137,7 @@
   background-color: black;
 }
 
-content {
+main {
   padding: 2% 0%;
   display: flex;
   flex-direction: column;
@@ -398,8 +398,9 @@ label,
 .logo {
   margin-bottom: 5%;
 
-  transition: all 1s linear;
-  
+  /* Only the spin animates; transitioning `all` made zoom shrink-then-grow the size */
+  transition: transform 1s linear;
+
   animation: fadeIn linear 1s;
   -webkit-animation: fadeIn linear 1s;
   -moz-animation: fadeIn linear 1s;
@@ -534,47 +535,34 @@ label,
 }
 
 .profile {
+  /* Fill the square container so the photo tracks its size instead of a stale 250px floor */
   border-radius: 50%;
-  width: 15%;
-  max-width: 20%;
-  min-width: 250px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .logo-shadow-container {
-    border-radius: 150px;
-    width: 13%;
-    height: 10%;
+    /* aspect-ratio keeps it square; independent width/height stretched it into a pill on zoom */
+    border-radius: 50%;
+    width: 15%;
     max-width: 20%;
-    min-height: 250px;
     min-width: 250px;
-    -webkit-box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
-    box-shadow: -10px 10px 10px rgba(0, 0, 0, .6);
+    aspect-ratio: 1;
+    /* drop-shadow follows the image's circular silhouette so no shadow rim peeks out as it spins (box-shadow drew a separate circle whose edge showed) */
+    filter: drop-shadow(-10px 10px 10px rgba(0, 0, 0, .6));
     -webkit-user-drag: none;
     position: relative;
     z-index: 1;
-    /* Match the logo's 1s ease so the shadow box resizes in sync with it.
-       Only size + shadow are transitioned — NOT left/bottom, which the game
-       updates every tick and must stay instant. */
-    transition: width 1s linear, height 1s linear,
-                min-width 1s linear, min-height 1s linear,
-                box-shadow 1s linear;
 }
 
 /* Short / landscape viewports (e.g. phones rotated sideways): the fixed 250px
    logo leaves almost no vertical room to bounce, making the game unplayable.
    Scale it to the available height so there's space to play. */
 @media (max-height: 600px) {
-  .profile {
-    width: 40vh;
-    min-width: 120px;
-    max-width: 40vh;
-  }
-
   .logo-shadow-container {
     width: 40vh;
-    height: 40vh;
     min-width: 120px;
-    min-height: 120px;
     max-width: 40vh;
   }
 }
@@ -821,4 +809,17 @@ img {
   font-weight: 400;
   color: gray;
   opacity: 0.5;
+}
+
+/* Visually hidden but readable by screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

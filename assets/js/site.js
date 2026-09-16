@@ -49,7 +49,7 @@ function toggleNavDropdown(e, val = null) {
   }
 
   if (e.parentElement !== undefined) {
-    var el = e.parentElement.querySelector('#dropdown')
+    var el = e.parentElement.querySelector('.dropdown-content')
     if (el) {
       if (val === null)
         el.classList.toggle("show");
@@ -60,6 +60,7 @@ function toggleNavDropdown(e, val = null) {
           el.classList.remove("show");
         }
       }
+      e.setAttribute("aria-expanded", el.classList.contains("show"));
       lastDropdown = e;
     }
   }

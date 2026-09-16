@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/aboutStyle.css">
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/aboutStyle.css">
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/LogoIcon.ico">
     <title>???</title>
 </head>
@@ -17,10 +17,11 @@
             <li><a href="index.html">Home</a></li>
         </ul>
     </nav>
-    <content>
+    <main>
         <div class="foreground"></div>
-        <h1 style="visibility:hidden">???</h1>
-        <img class="logo" title="Logo" draggable="false" src="assets/images/LogoSmall.png">
+        <h1 class="sr-only">Coming soon</h1>
+        <h1 aria-hidden="true" style="visibility:hidden">???</h1>
+        <img class="logo" title="Logo" alt="Mike ;D logo" draggable="false" src="assets/images/LogoSmall.png">
         <p>
             <q style="visibility:hidden">I'll get back to this later... (Like 2026-ish)</q>
         </p>
@@ -28,10 +29,10 @@
             <a href="">Download Here</a>
         </div>
         <div class="socials" style="visibility:hidden">
-            <img class="socials-logo" onclick="location.href='https:/\/discord.com/';" title="Discord" src="assets/images/Discord-Symbol-Black.png">
-            <img class="socials-logo" onclick="location.href='https:/\/github.com/';" title="Github" src="assets/images/github-mark.png">
+            <a href="https://discord.com/" target="_blank" rel="noopener" title="Discord"><img class="socials-logo" alt="Discord" src="assets/images/Discord-Symbol-Black.png"></a>
+            <a href="https://github.com/MikeSemicolonD" target="_blank" rel="noopener" title="Github"><img class="socials-logo" alt="GitHub" src="assets/images/github-mark.png"></a>
         </div>
-    </content>
+    </main>
     <footer style="visibility:hidden" class="nav-footer">
         <div class="copyright">Brought to you by <a href="https://pages.github.com/"><strong>GitHub Pages</strong></a>!
         </div>
