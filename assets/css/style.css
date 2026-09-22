@@ -412,6 +412,13 @@ label,
   -webkit-user-drag: none;
 }
 
+/* Keyboard focus ring — only shows for tab/keyboard, not mouse clicks */
+.logo:focus-visible {
+  outline: 3px solid #1982c4;
+  outline-offset: 6px;
+  border-radius: 50%;
+}
+
 .word-animation
 {
   img {

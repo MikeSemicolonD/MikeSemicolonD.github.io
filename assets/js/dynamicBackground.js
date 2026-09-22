@@ -86,15 +86,22 @@ function finishFade(bgEl) {
   if (fadeQueue.length) startNextFade(bgEl);
 }
 
+// Persist + apply a theme mode; ignores anything not auto/light/dark.
+function setTheme(mode) {
+  if (mode !== 'auto' && mode !== 'light' && mode !== 'dark') return getThemeMode();
+  try {
+    if (mode === 'auto') localStorage.removeItem(BG_KEY);
+    else                 localStorage.setItem(BG_KEY, mode);
+  } catch (e) {}
+  applyTheme(mode);
+  return mode;
+}
+
 function cycleTheme() {
   const order = ['auto', 'light', 'dark'];
   const current = getThemeMode();
   const next = order[(order.indexOf(current) + 1) % order.length];
-  try {
-    if (next === 'auto') localStorage.removeItem(BG_KEY);
-    else                 localStorage.setItem(BG_KEY, next);
-  } catch (e) {}
-  applyTheme(next);
+  setTheme(next);
 }
 
 applyTheme(getThemeMode());

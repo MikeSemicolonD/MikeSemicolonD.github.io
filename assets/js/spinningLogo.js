@@ -7,7 +7,12 @@ var clicks = 0;
 
 var hit = 0;
 
-var maxSpeed = 10;
+// Perfect dead-center hits raise maxSpeed above this base (up to MAX_SPEED_CAP);
+// it resets to the base once the logo comes to rest, so the speed-up is per-run.
+const BASE_MAX_SPEED = 5;
+const SPEED_BOOST_PER_HIT = 2.5;
+const MAX_SPEED_CAP = 45;
+var maxSpeed = BASE_MAX_SPEED;
 
 var dSpeed = (1 / 6);
 
@@ -152,6 +157,9 @@ window.onload = window.onresize = function (event) {
 // Extends the logo's effective click hitbox beyond its visible circle, so it's
 // easier to catch when bouncing fast. Clicks on real interactive elements pass through.
 const LOGO_CLICK_MARGIN = 40;
+// A click landing within this fraction of the logo's radius counts as a
+// "perfect center" hit that speeds the logo up.
+const CENTER_HIT_FRACTION = 0.3;
 document.addEventListener('mousedown', function(e) {
   if (e.target.closest('a, button, input, select, textarea, label')) return;
   let logo = (logoElement && logoElement.children[0]) || document.querySelector('.logo.profile');
@@ -161,11 +169,25 @@ document.addEventListener('mousedown', function(e) {
   let cy = r.top + r.height / 2;
   let dx = e.clientX - cx;
   let dy = e.clientY - cy;
-  let hitR = Math.min(r.width, r.height) / 2 + LOGO_CLICK_MARGIN;
+  let radius = Math.min(r.width, r.height) / 2;
+  let hitR = radius + LOGO_CLICK_MARGIN;
   if (dx*dx + dy*dy < hitR * hitR) {
     e.preventDefault();
-    triggerSpin(logo);
+    let centerR = radius * CENTER_HIT_FRACTION;
+    let center = dx*dx + dy*dy < centerR * centerR;
+    triggerSpin(logo, null, { center: center });
   }
+});
+
+// Keyboard activation: when the logo is focused (tab-navigated) and Enter/Space
+// is pressed, it always registers as a perfect dead-center hit — so a player can
+// tab to the face and spam it to keep speeding it up.
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+  let logo = (logoElement && logoElement.children[0]) || document.querySelector('.logo.profile');
+  if (!logo || document.activeElement !== logo) return;
+  e.preventDefault(); // stop Space from scrolling the page
+  triggerSpin(logo, null, { center: true });
 });
 
 // External input entry point (see deviceShake.js): a physical shake registers as a
@@ -198,14 +220,27 @@ function applyShakeOverride(override)
   return true;
 }
 
+// Raises the speed cap on a perfect dead-center hit and, if the logo is already
+// flying, immediately snaps it up to the new top speed. The boost accumulates so
+// repeated center hits keep it going faster, up to MAX_SPEED_CAP.
+function registerCenterHit()
+{
+  maxSpeed = Math.min(MAX_SPEED_CAP, maxSpeed + SPEED_BOOST_PER_HIT);
+  if (window.gameSound) window.gameSound.play('boost');
+  if (speed !== 0) speed = maxSpeed;
+}
+
 // Triggered from the logo. `override` (optional) carries a shake's direction + force;
-// when absent the launch direction is random as before.
-async function triggerSpin (element, override)
+// when absent the launch direction is random as before. `opts.center` marks a
+// perfect dead-center hit (mouse near center, or any keyboard activation).
+async function triggerSpin (element, override, opts)
 {
   // First interaction starts the game — reveal the sound toggle from here on
   if (window.gameSound) window.gameSound.reveal();
 
   bigCount++;
+
+  if (opts && opts.center) registerCenterHit();
 
   if (bigCount === BOSS_TRIGGER_COUNT) spawnBoss();
   if (!bossActive && speed !== 0 && bigCount % 10n === 0n) triggerConfetti();
@@ -312,25 +347,41 @@ function checkHitBox()
 		return;
   }
   
-  if (((x+imgWidth+(borderPadding*1.1)) > screenWidth && xDir > 0) || ((x-imgWidth) < -screenWidth && xDir < 0)) {
+  // Right wall — bounce panned hard right
+  if ((x+imgWidth+(borderPadding*1.1)) > screenWidth && xDir > 0) {
       xDir *= -1;
-      hitBounds();
+      hitBounds('bounce', 1);
       return;
   }
-        
+  // Left wall — bounce panned hard left
+  if ((x-imgWidth) < -screenWidth && xDir < 0) {
+      xDir *= -1;
+      hitBounds('bounce', -1);
+      return;
+  }
+
   // Vertical caps are shifted by restOffsetY so the play area tracks the viewport
   // (top edge reaches near the top, bottom edge stops at the footer) regardless of
-  // where the logo rests in the page layout.
-  if (((y+imgHeight+borderPadding) > screenHeight + restOffsetY && yDir > 0) || ((y-imgHeight) < -(screenHeight-bottomBuffer) + restOffsetY && yDir < 0)) {
+  // where the logo rests in the page layout. Top and bottom get distinct sounds,
+  // panned by the logo's horizontal position so they still track L/R.
+  let vpan = clamp(x / screenWidth, -1, 1);
+  // Top edge (y grows upward, so this is moving up)
+  if ((y+imgHeight+borderPadding) > screenHeight + restOffsetY && yDir > 0) {
       yDir *= -1;
-      hitBounds();
+      hitBounds('bounceTop', vpan);
+      return;
+  }
+  // Bottom edge
+  if ((y-imgHeight) < -(screenHeight-bottomBuffer) + restOffsetY && yDir < 0) {
+      yDir *= -1;
+      hitBounds('bounceBottom', vpan);
       return;
   }
 }
 
-function hitBounds()
+function hitBounds(soundName, pan)
 {
-  if (window.gameSound) window.gameSound.play('bounce');
+  if (window.gameSound) window.gameSound.play(soundName || 'bounce', { pan: pan || 0 });
 
 	hit++;
 
@@ -404,6 +455,8 @@ function update()
         totalRot = homeTargetRot;
         // Outside boss mode, the count fades away when the spin-off counter resets
         bigOpacity = 0;
+        // Speed build-up from center hits is per-run — reset it once at rest
+        maxSpeed = BASE_MAX_SPEED;
       }
       // In boss mode: leave position, rotation, and the score visible
       hit = 0;
@@ -787,6 +840,7 @@ function endBoss()
   bossAngle = 0;
   bossOrbitRadius = 0;
   timeScale = 1;
+  maxSpeed = BASE_MAX_SPEED;
 
   renderBigCount();
 }

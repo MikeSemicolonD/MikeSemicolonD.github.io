@@ -36,13 +36,25 @@
     return ctx;
   }
 
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+  // Returns a node to connect a sound's output into: a StereoPanner when a pan
+  // is requested (and supported), otherwise the master gain directly.
+  function outNode(pan) {
+    if (!pan || !ctx.createStereoPanner) return master;
+    const p = ctx.createStereoPanner();
+    p.pan.value = clamp(pan, -1, 1);
+    p.connect(master);
+    return p;
+  }
+
   // A single enveloped oscillator tone. freqEnd lets the pitch glide.
   function tone(opts) {
     if (!master) return;
     const t = ctx.currentTime;
     const {
       freq, freqEnd = freq, type = 'square',
-      dur = 0.12, gain = 0.3, delay = 0,
+      dur = 0.12, gain = 0.3, delay = 0, pan = 0,
     } = opts;
 
     const osc = ctx.createOscillator();
@@ -59,7 +71,7 @@
     g.gain.exponentialRampToValueAtTime(0.0001, t + delay + dur);
 
     osc.connect(g);
-    g.connect(master);
+    g.connect(outNode(pan));
     osc.start(t + delay);
     osc.stop(t + delay + dur + 0.02);
   }
@@ -68,7 +80,7 @@
   function noise(opts) {
     if (!master) return;
     const t = ctx.currentTime;
-    const { dur = 0.12, gain = 0.2, delay = 0, hp = 0, lp = 20000 } = opts;
+    const { dur = 0.12, gain = 0.2, delay = 0, hp = 0, lp = 20000, pan = 0 } = opts;
 
     const frames = Math.floor(ctx.sampleRate * dur);
     const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
@@ -88,7 +100,7 @@
 
     src.connect(filt);
     filt.connect(g);
-    g.connect(master);
+    g.connect(outNode(pan));
     src.start(t + delay);
     src.stop(t + delay + dur);
   }
@@ -104,8 +116,23 @@
     },
     // Mid-flight click that kicks the logo onward
     kick: () => tone({ freq: 660, freqEnd: 1100, type: 'square', dur: 0.08, gain: 0.2 }),
-    // Wall bounce
-    bounce: () => tone({ freq: 180, freqEnd: 90, type: 'triangle', dur: 0.12, gain: 0.28 }),
+    // Side-wall bounce — o.pan places it in the L/R channel of the wall it hit
+    bounce: (o) => tone({ freq: 180, freqEnd: 90, type: 'triangle', dur: 0.12, gain: 0.28, pan: o.pan }),
+    // Top-wall bounce — brighter, upward blip so it's audibly distinct from the floor
+    bounceTop: (o) => {
+      tone({ freq: 520, freqEnd: 820, type: 'triangle', dur: 0.1, gain: 0.24, pan: o.pan });
+      tone({ freq: 260, freqEnd: 410, type: 'sine', dur: 0.1, gain: 0.12, pan: o.pan });
+    },
+    // Bottom-wall bounce — low, downward thud
+    bounceBottom: (o) => {
+      tone({ freq: 130, freqEnd: 55, type: 'triangle', dur: 0.16, gain: 0.32, pan: o.pan });
+      noise({ dur: 0.08, gain: 0.1, hp: 60, lp: 500, pan: o.pan });
+    },
+    // Perfect dead-center hit that speeds the logo up
+    boost: () => {
+      tone({ freq: 600, freqEnd: 1500, type: 'square', dur: 0.12, gain: 0.2 });
+      tone({ freq: 900, freqEnd: 1900, type: 'sine', dur: 0.1, gain: 0.12, delay: 0.03 });
+    },
     // Confetti milestone sparkle
     confetti: () => {
       tone({ freq: 880, type: 'sine', dur: 0.08, gain: 0.12 });
@@ -137,12 +164,12 @@
     },
   };
 
-  function play(name) {
+  function play(name, opts) {
     if (muted) return;
     const def = SOUNDS[name];
     if (!def) return;
     if (!ensureContext()) return;
-    try { def(); } catch (e) {}
+    try { def(opts || {}); } catch (e) {}
   }
 
   function updateButton() {
