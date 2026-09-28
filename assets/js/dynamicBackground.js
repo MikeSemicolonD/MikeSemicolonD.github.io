@@ -23,6 +23,9 @@ function applyTheme(mode) {
   else if (mode === 'dark')  bg = BG_NIGHT;
   else                       bg = isDaytime() ? BG_DAY : BG_NIGHT;
 
+  // Resolved light/dark for theme-aware CSS (e.g. the Ko-fi badge)
+  document.documentElement.dataset.theme = bg === BG_DAY ? 'light' : 'dark';
+
   let bgEl = document.getElementById('background');
   if (bgEl) {
     let current = bgEl.style.backgroundImage;

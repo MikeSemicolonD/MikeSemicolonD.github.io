@@ -10,7 +10,7 @@ var hit = 0;
 // Perfect dead-center hits raise maxSpeed above this base (up to MAX_SPEED_CAP);
 // it resets to the base once the logo comes to rest, so the speed-up is per-run.
 const BASE_MAX_SPEED = 5;
-const SPEED_BOOST_PER_HIT = 2.5;
+const SPEED_BOOST_PER_HIT = 0.035;
 const MAX_SPEED_CAP = 45;
 var maxSpeed = BASE_MAX_SPEED;
 

@@ -19,6 +19,7 @@
     links: {
       github: "https://github.com/MikeSemicolonD",
       linkedin: "https://www.linkedin.com/in/michael-frye-683a9917b/",
+      kofi: "https://ko-fi.com/mikesemicolond",
       itchLittleGear: "https://littlegearstudios.itch.io",
       itchProjectPiper: "https://program-canaan.itch.io/pied-piper-battle-system",
       roomTempVizTool: "https://mikesemicolond.github.io/Air-Room-Viz-Tool/",
