@@ -22,6 +22,7 @@
       kofi: "https://ko-fi.com/mikesemicolond",
       itchLittleGear: "https://littlegearstudios.itch.io",
       itchProjectPiper: "https://program-canaan.itch.io/pied-piper-battle-system",
+      screenShakeBrowserExt: "https://github.com/MikeSemicolonD/StressReliefExtension",
       roomTempVizTool: "https://mikesemicolond.github.io/Air-Room-Viz-Tool/",
       xaiExportViewer: "https://mikesemicolond.github.io/static-xAI-data-viewer/"
     }
