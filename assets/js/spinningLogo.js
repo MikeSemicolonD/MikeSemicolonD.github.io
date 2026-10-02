@@ -738,16 +738,22 @@ function killRedOrb(i)
 }
 
 var lastScoreEl = null;
+var lastScoreValue = 0;
 function showLastScore(scoreCount)
 {
+  lastScoreValue = scoreCount;
   if (!lastScoreEl) {
     lastScoreEl = document.createElement('div');
     lastScoreEl.className = 'last-score';
-    let footer = document.querySelector('.nav-footer');
-    if (footer) footer.appendChild(lastScoreEl);
+    // Share the language picker's row when there is one, so the score doesn't wrap out of the footer
+    let footer = document.querySelector('.footer-lang') || document.querySelector('.nav-footer');
+    if (footer) footer.prepend(lastScoreEl);
   }
-  lastScoreEl.textContent = `Score: ${formatBigCount(scoreCount)}`;
+  lastScoreEl.textContent = t('score', 'Score: {n}', { n: formatBigCount(scoreCount) });
 }
+
+// Re-render the last score in the new language
+document.addEventListener('langchange', () => { if (lastScoreEl) showLastScore(lastScoreValue); });
 
 const SPARK_COLORS = ['#ff4400', '#ff7722', '#ffbb44', '#ffee88', '#ffffff'];
 const SPARK_COUNT = 18;

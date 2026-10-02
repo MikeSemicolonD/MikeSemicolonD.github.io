@@ -27,15 +27,6 @@
 
 /* Mobile styles */
 @media (max-width: 768px) {
-  /* Desktop uses 20% side padding to center the bar; far too much on a phone */
-  .navbar {
-    padding: 12px 16px;
-  }
-
-  .kofi-button img {
-    height: 20px;
-  }
-
   .menu-icon {
     display: block !important;
     /* Push the theme/sound/rss buttons to the right edge */
@@ -137,6 +128,7 @@
   background-attachment: fixed;
   display: grid;
   grid-template-areas: "navbar" "content" "nav-footer";
+  grid-template-columns: minmax(0, 1fr); /* stop wide content (e.g. the hero SVGs) from stretching the page past the viewport */
   height: 100vh;
   background-color: black;
 }
@@ -245,6 +237,61 @@ html[data-theme="dark"] .kofi-button .kofi-dark {
   display: block;
 }
 
+/* Mobile overrides that must come after the base .navbar/.kofi-button rules to take effect */
+@media (max-width: 768px) {
+  /* Desktop uses 20% side padding to center the bar; far too much on a phone */
+  .navbar {
+    padding: 12px 16px;
+  }
+
+  .kofi-button img {
+    height: 20px;
+  }
+}
+
+/* Size tiers: wide banner, then the stacked badge, then just the cup as width runs out */
+.kofi-tier {
+  display: flex;
+  align-items: center;
+}
+
+.kofi-badge,
+.kofi-symbol {
+  display: none;
+}
+
+/* The cup has no dark variant and its outline vanishes on the navbar, so it sits on a Ko-fi beige chip */
+.kofi-symbol {
+  padding: 3px 5px;
+  border-radius: 6px;
+  background-color: #f4efe7;
+  transition: box-shadow 0.25s ease;
+}
+
+.kofi-button:hover .kofi-symbol,
+.kofi-button:focus-visible .kofi-symbol {
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.9);
+}
+
+@media (max-width: 360px) {
+  .kofi-banner { display: none; }
+  .kofi-badge { display: flex; }
+
+  .kofi-button .kofi-badge img {
+    height: 30px;
+  }
+}
+
+@media (max-width: 300px) {
+  .kofi-badge { display: none; }
+  .kofi-symbol { display: flex; }
+
+  .kofi-button .kofi-symbol img {
+    height: 18px;
+    filter: none;
+  }
+}
+
 .kofi-button:hover img,
 .kofi-button:focus-visible img {
   filter: drop-shadow(0 0 12px rgba(255, 107, 107, 0.9));
@@ -269,6 +316,45 @@ html[data-theme="dark"] .kofi-button .kofi-dark {
   transform: translateY(-1px) scale(1.12);
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
   outline: none;
+}
+
+.lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 3px 28px;
+  border: 1px solid rgba(200, 200, 200, 0.25);
+  border-radius: 999px;
+  /* globe on the left, chevron on the right */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a0a0a0' stroke-width='1.6'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18'/%3E%3C/svg%3E") no-repeat 9px center / 14px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a0a0a0' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center / 12px,
+    rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-family: "Open Sans";
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.4;
+  color: gray;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+.lang-select option {
+  background-color: #2e2e2e;
+  color: rgb(200, 200, 200);
+}
+
+.lang-select:hover {
+  color: rgb(200, 200, 200);
+  border-color: rgba(200, 200, 200, 0.55);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+/* Matches the logo's keyboard focus color */
+.lang-select:focus-visible {
+  outline: none;
+  color: rgb(200, 200, 200);
+  border-color: #1982c4;
+  box-shadow: 0 0 0 2px rgba(25, 130, 196, 0.35);
 }
 
 .mute-button {
@@ -497,32 +583,77 @@ html[data-theme="dark"] .kofi-button .kofi-dark {
   left: -10px;
 }
 
+/* Set by i18n.js while a non-English language file loads */
+.i18n-pending .content-text {
+  visibility: hidden;
+}
+
+/* Text stand-in for the hero SVGs in non-English languages (sized/styled to match them) */
+.hero-word {
+  display: inline-block;
+  font-family: sans-serif;
+  font-weight: normal;
+  font-size: min(40px, 8vw);
+  line-height: 31px;
+  padding: 0 0.12em;
+  color: #fff;
+  white-space: nowrap;
+  filter: drop-shadow(0px 0px 15px rgb(0 0 0));
+}
+
+/* The slot offsets above are hand-tuned for the English SVGs; translated text sits on a plain baseline */
+[data-i18n-word]:has(> .hero-word) {
+  top: 0;
+  left: 0;
+}
+
+/* The welcome line is the longest; shrink it sooner so it doesn't widen the page on phones */
+.content-text p .hero-word {
+  font-size: min(40px, 6vw);
+}
+
+/* Full-width CJK glyphs run much wider than Latin at the same size */
+.hero-word:lang(ja) {
+  font-size: min(30px, 6vw);
+}
+
+.word-animation .hero-word { transition: transform 0.1s; }
+.word-animation-two .hero-word { transition: transform 0.5s; }
+.word-animation-three .hero-word { transition: transform 0.2s; }
+.word-animation-four .hero-word { transition: transform 0.3s; }
+.word-animation-five .hero-word { transition: transform 0.5s; }
+
 .word-animation:hover
 {
+  .hero-word,
   img {
     transform: translateY(-15px);
   }
 }
 
 .word-animation-two:hover {
+  .hero-word,
   img {
     transform: translateY(-10px) rotate(15deg);
   }
 }
 
 .word-animation-three:hover {
+  .hero-word,
   img {
     transform: translateY(-12px) rotate(10deg);
   }
 }
 
 .word-animation-four:hover {
+  .hero-word,
   img {
     transform: translateY(-12px) rotate(-12deg);
   }
 }
 
 .word-animation-five:hover {
+  .hero-word,
   img {
     transform: translateY(-10px) rotate(360deg);
   }
@@ -530,6 +661,7 @@ html[data-theme="dark"] .kofi-button .kofi-dark {
 
 .content-text {
   opacity: 1;
+  max-width: 100%;
 
   text-shadow: 0px 0px 15px rgb(0 0 0);
 
@@ -566,6 +698,7 @@ html[data-theme="dark"] .kofi-button .kofi-dark {
   cursor: default;
   grid-auto-flow: column;
   display: grid;
+  justify-content: center; /* line may be wider than a phone before its 0.6 scale; keep it centered */
 }
 
 .content-text::selection {
@@ -833,11 +966,64 @@ img {
 
 .copyright {
   margin: 0;
-  padding: 1.5% 20%;
+  padding: 1.5% 0 1.5% 20%; /* no right padding so the picker row has room beside it */
   float: left;
   font-family: "Open Sans";
   font-weight: 400;
   text-wrap-style: pretty;
+}
+
+.footer-lang {
+  float: right;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-right: calc(32vw - 20px); /* mirrors the copyright's inset (footer is 110% wide, shifted 10px left) */
+}
+
+@media (max-width: 768px) {
+  /* One row on phones: copyright wraps if needed, picker shrinks to its globe icon */
+  .nav-footer {
+    display: flex;
+    align-items: center;
+  }
+
+  .copyright {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 8px 0 calc(10px + 16px);
+    font-size: 13px;
+  }
+
+  .footer-lang {
+    flex: none;
+    height: auto;
+    padding-right: calc(10vw + 6px);
+  }
+
+  .footer-lang .last-score {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .lang-select {
+    width: 32px;
+    height: 26px;
+    padding: 0;
+    color: transparent;
+    background-position: center, -100px 0, 0 0; /* center the globe, hide the chevron */
+  }
+
+  .lang-select:hover,
+  .lang-select:focus-visible {
+    color: transparent;
+  }
+}
+
+/* The score sits just left of the picker */
+.footer-lang .last-score {
+  float: none;
+  padding: 0 16px;
 }
 
 .last-score {

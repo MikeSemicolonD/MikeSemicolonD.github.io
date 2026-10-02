@@ -6,25 +6,34 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="alternate" type="application/atom+xml" title="Feed of Mike ;D" href="feed.xml">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-    <title>Home</title>
+    <title data-i18n="page.home">Home</title>
 </head>
 <body id="background">
     <nav class="navbar">
-		<a class="rss-button" href="feed.xml" target="_blank"><img src="assets/images/Feed-icon.svg" alt="RSS feed" draggable="false"></a>
-		<a class="kofi-button" href="https://ko-fi.com/mikesemicolond" target="_blank" rel="noopener" title="Support me on Ko-fi">
-		  <img class="kofi-light" src="assets/images/support_me_on_kofi_beige.png" alt="Support me on Ko-fi" draggable="false">
-		  <img class="kofi-dark" src="assets/images/support_me_on_kofi_dark.png" alt="Support me on Ko-fi" draggable="false">
+		<a class="rss-button" href="feed.xml" target="_blank"><img src="assets/images/Feed-icon.svg" alt="RSS feed" data-i18n-alt="rss" draggable="false"></a>
+		<a class="kofi-button" href="https://ko-fi.com/mikesemicolond" target="_blank" rel="noopener" title="Support me on Ko-fi" data-i18n-title="kofi">
+		  <span class="kofi-tier kofi-banner">
+		    <img class="kofi-light" src="assets/images/support_me_on_kofi_beige.png" alt="Support me on Ko-fi" data-i18n-alt="kofi" draggable="false">
+		    <img class="kofi-dark" src="assets/images/support_me_on_kofi_dark.png" alt="Support me on Ko-fi" data-i18n-alt="kofi" draggable="false">
+		  </span>
+		  <span class="kofi-tier kofi-badge">
+		    <img class="kofi-light" src="assets/images/support_me_on_kofi_badge_beige.png" loading="lazy" alt="Support me on Ko-fi" data-i18n-alt="kofi" draggable="false">
+		    <img class="kofi-dark" src="assets/images/support_me_on_kofi_badge_dark.png" loading="lazy" alt="Support me on Ko-fi" data-i18n-alt="kofi" draggable="false">
+		  </span>
+		  <span class="kofi-tier kofi-symbol">
+		    <img src="assets/images/kofi_symbol.png" loading="lazy" alt="Support me on Ko-fi" data-i18n-alt="kofi" draggable="false">
+		  </span>
 		</a>
-		  <button class="mute-button mute-hidden" type="button" onclick="toggleGameSound()" title="Game sound" aria-label="Toggle game sound" aria-pressed="false">🔊</button>
-		  <button class="theme-button" type="button" onclick="cycleTheme()" title="Theme: Auto / Light / Dark" aria-label="Toggle background theme">🕐</button>
+		  <button class="mute-button mute-hidden" type="button" onclick="toggleGameSound()" title="Game sound" aria-label="Toggle game sound" data-i18n-title="sound.title" data-i18n-aria-label="sound.aria" aria-pressed="false">🔊</button>
+		  <button class="theme-button" type="button" onclick="cycleTheme()" title="Theme: Auto / Light / Dark" aria-label="Toggle background theme" data-i18n-title="theme.title" data-i18n-aria-label="theme.aria">🕐</button>
       <input type="checkbox" id="menu-toggle" class="menu-toggle" value="false" />
       <label for="menu-toggle" class="menu-icon">&#9776;</label>
       <ul class="nav-links">
-        <li style="display: none;"><a href="#">Home</a></li>
+        <li style="display: none;"><a href="#" data-i18n="nav.home">Home</a></li>
         <li><a title="???" href="game.html">🚀 ???</a></li>
         <li>
           <div class="dropdown">
-            <button title="Itch.io Projects/Endeavors" class="drop-button" onclick="toggleNavDropdown(this)" aria-haspopup="true" aria-expanded="false">Itch.io</button>
+            <button title="Itch.io Projects/Endeavors" data-i18n-title="nav.itch.title" class="drop-button" onclick="toggleNavDropdown(this)" aria-haspopup="true" aria-expanded="false">Itch.io</button>
             <div class="dropdown-content">
               <a title="Little Gear Studios" href="https://littlegearstudios.itch.io">⚙️ Little Gear Studios</a>
               <a title="Project Piper" href="https://program-canaan.itch.io/pied-piper-battle-system">👥 Project Piper</a>
@@ -33,11 +42,11 @@
         </li>
         <li>
           <div class="dropdown">
-          <button title="Tools" class="drop-button" onclick="toggleNavDropdown(this)" aria-haspopup="true" aria-expanded="false">Tools</button>
+          <button title="Tools" class="drop-button" onclick="toggleNavDropdown(this)" aria-haspopup="true" aria-expanded="false" data-i18n="nav.tools" data-i18n-title="nav.tools">Tools</button>
           <div class="dropdown-content">
-            <a title="Screen Shake Stress Reliever Browser Ext." href="https://github.com/MikeSemicolonD/StressReliefExtension" target="_blank">Screen Shaker Stress Reliever Browser Ext.</a>
-            <a title="Room Temp Viz. Tool" href="https://mikesemicolond.github.io/Air-Room-Viz-Tool/" target="_blank">Room Temp Viz. Tool</a>
-            <a title="Grok (xAI) Export Viewer" href="https://mikesemicolond.github.io/static-xAI-data-viewer/" target="_blank">𝕏  xAI Export Viewer</a>
+            <a title="Screen Shake Stress Reliever Browser Ext." data-i18n="tool.shaker" data-i18n-title="tool.shaker" href="https://github.com/MikeSemicolonD/StressReliefExtension" target="_blank">Screen Shaker Stress Reliever Browser Ext.</a>
+            <a title="Room Temp Viz. Tool" data-i18n="tool.roomTemp" data-i18n-title="tool.roomTemp" href="https://mikesemicolond.github.io/Air-Room-Viz-Tool/" target="_blank">Room Temp Viz. Tool</a>
+            <a title="Grok (xAI) Export Viewer" data-i18n="tool.xai" data-i18n-title="tool.xai.title" href="https://mikesemicolond.github.io/static-xAI-data-viewer/" target="_blank">𝕏  xAI Export Viewer</a>
           </div>
         </div>
         </li>
@@ -48,17 +57,19 @@
     <main>
         <div id="big-count" class="big-count" aria-hidden="true"></div>
         <div class="content-text" draggable="false">
-          <h1 class="word-animation" draggable="false"><img src="assets/images/home/Hello.svg" alt="Hello" draggable="false"></h1>
-          <p draggable="false"><span class="word-animation-two" draggable="false"><img src="assets/images/home/Welcome.svg" alt="Welcome" draggable="false"></span> <span class="word-animation-three" draggable="false"><img src="assets/images/home/to.svg" alt="to" draggable="false"></span> <span class="word-animation-four" draggable="false"><img src="assets/images/home/my.svg" alt="my" draggable="false"></span> <span class="word-animation-five" draggable="false"><img src="assets/images/home/website.svg" alt="website" draggable="false"></span></p>
+          <h1 class="word-animation" data-i18n-word="hero.1" draggable="false"><img src="assets/images/home/Hello.svg" alt="Hello" draggable="false"></h1>
+          <p draggable="false"><span class="word-animation-two" data-i18n-word="hero.2" draggable="false"><img src="assets/images/home/Welcome.svg" alt="Welcome" draggable="false"></span> <span class="word-animation-three" data-i18n-word="hero.3" draggable="false"><img src="assets/images/home/to.svg" alt="to" draggable="false"></span> <span class="word-animation-four" data-i18n-word="hero.4" draggable="false"><img src="assets/images/home/my.svg" alt="my" draggable="false"></span> <span class="word-animation-five" data-i18n-word="hero.5" draggable="false"><img src="assets/images/home/website.svg" alt="website" draggable="false"></span></p>
         </div>
         <div class="logo-shadow-container" draggable="false">
-          <img class="logo profile" title="Me" alt="Michael Frye" src="assets/images/Profile.png" draggable="false" tabindex="0" role="button" aria-label="Spin Michael's face — press Enter or Space to hit it dead center">
+          <img class="logo profile" title="Me" data-i18n-title="logo.title" alt="Michael Frye" src="assets/images/Profile.png" draggable="false" tabindex="0" role="button" aria-label="Spin Michael's face — press Enter or Space to hit it dead center" data-i18n-aria-label="logo.aria">
         </div>
     </main>
     <footer class="nav-footer">
-        <div class="copyright">Brought to you by <a href="https://docs.github.com/en/pages"><strong>GitHub Pages</strong></a>!</div>
+        <div class="copyright"><span data-i18n="footer.by">Brought to you by</span> <a href="https://docs.github.com/en/pages"><strong>GitHub Pages</strong></a><span data-i18n="footer.end">!</span></div>
+        <div class="footer-lang"><select class="lang-select" aria-label="Language" data-i18n-aria-label="lang.label"></select></div>
     </footer>
     <script src="assets/js/site.js"></script>
+    <script src="assets/js/i18n.js"></script>
     <script src="assets/js/dynamicBackground.js"></script>
     <script src="assets/js/gameAudio.js"></script>
     <script src="assets/js/spinningLogo.js"></script>
